@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <h1>注册页面</h1>
+    <hr>
+    <!-- 
+        action="/register" 提交的目标地址，浏览器会把数据发到http://当前域名/register下
+        method="POST"	使用POST方法提交（数据放在请求体里，不在URL中）
+        enctype="application/x-www-form-urlencoded"	数据编码格式，提交表单数据
+            浏览器会把表单数据拼成：?username=张三&email=123&password=123&repassword=123，
+            然后用 Content-Type: application/x-www-form-urlencoded 发送给服务器，
+            在req.body（请求体）中就可以接收了 {username: '张三', email: "123", password: '123'}
+    -->
+    <form action="/register" method="POST" enctype="application/x-www-form-urlencoded">
+        <p>
+            用户名：<input type="text" name="username" placeholder="请输入用户名...">
+        </p>
+        <p>
+            邮箱：<input type="text" name="email" placeholder="请输入邮箱...">
+        </p>
+        <p>
+            密码：<input type="password" name="password" placeholder="请输入密码...">
+        </p>
+        <p>
+            确认密码：<input type="password" name="repwd">
+        </p>
+        <p>
+            <input type="submit" value="注册提交">
+        </p>
+    </form>
+</body>
+</html>

@@ -134,16 +134,24 @@ html, body {
 }
 
 /* ================= 全局组件覆盖 ================= */
+
+/* M3 卡片：去掉边框，改用容器色区分底色 */
 .el-card {
-  border-radius: 16px !important;
-  border: 1px solid var(--m3-surface-container-high) !important;
+  border: none !important;
+  background-color: var(--m3-surface-container) !important;
   box-shadow: none !important;
-  background-color: var(--m3-surface) !important;
+  border-radius: 20px !important;
   transition: box-shadow 0.2s ease, transform 0.2s ease !important;
 }
 
 .el-card:hover {
   box-shadow: var(--el-box-shadow-light) !important;
+}
+
+/* 卡片头部：去掉分割线 */
+.el-card__header {
+  border-bottom: none !important;
+  padding: 24px 24px 8px !important;
 }
 
 .el-button {
@@ -194,23 +202,41 @@ html, body {
   padding: 16px 24px 24px !important;
 }
 
+/* 表格去框化 */
 .el-table {
+  border: none !important;
   border-radius: 12px !important;
   overflow: hidden;
-  border: 1px solid var(--m3-surface-container-high);
-  --el-table-bg-color: var(--m3-surface);
-  --el-table-tr-bg-color: var(--m3-surface);
-  --el-table-header-bg-color: var(--m3-surface-container);
+  background-color: transparent !important;
+  --el-table-bg-color: transparent;
+  --el-table-tr-bg-color: transparent;
+  --el-table-header-bg-color: transparent;
+}
+
+/* 隐藏表格底部自带的横线 */
+.el-table__inner-wrapper::before {
+  display: none !important;
+}
+
+/* 表头和单元格底部的线变得极其柔和 */
+.el-table th.el-table__cell,
+.el-table td.el-table__cell {
+  border-bottom: 1px solid var(--m3-surface-container-high) !important;
+  background-color: transparent !important;
+  color: var(--m3-on-surface) !important;
 }
 
 .el-table th.el-table__cell {
-  background-color: var(--m3-surface-container) !important;
-  color: var(--m3-on-surface) !important;
   font-weight: 600 !important;
 }
 
-.el-table td.el-table__cell {
-  border-bottom-color: var(--m3-surface-container-high) !important;
+/* 悬浮时的颜色随主题变化 */
+.el-table--striped .el-table__body tr.el-table__row--striped td.el-table__cell {
+  background-color: var(--m3-surface-container-high) !important;
+}
+
+.el-table tbody tr:hover > td.el-table__cell {
+  background-color: var(--m3-surface-container-high) !important;
 }
 
 .el-tag {

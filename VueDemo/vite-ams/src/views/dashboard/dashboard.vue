@@ -20,6 +20,8 @@ let lineChart: echarts.ECharts;
 
 const m3Colors = ["#6750A4", "#386A20", "#8B5000", "#BA1A1A", "#006A6A", "#7D5260"];
 
+const getStyle = (varName: string) => getComputedStyle(document.documentElement).getPropertyValue(varName).trim();
+
 const loadData = async () => {
   const res = await getDashboardStatsApi();
   if (res.code === 200) {
@@ -37,17 +39,17 @@ const renderBarChart = (data: { name: string; yield: number; area: number }[]) =
     title: {
       text: "作物产量与种植面积",
       left: "center",
-      textStyle: { color: "#1D1B20", fontWeight: 600 },
+      textStyle: { color: getStyle("--m3-on-surface"), fontWeight: 600 },
     },
     tooltip: {
       trigger: "axis",
-      backgroundColor: "#ffffff",
-      borderColor: "#CAC4D0",
-      textStyle: { color: "#1D1B20" },
+      backgroundColor: getStyle("--m3-surface-container-high"),
+      borderColor: getStyle("--m3-outline"),
+      textStyle: { color: getStyle("--m3-on-surface") },
     },
     legend: {
       top: 36,
-      textStyle: { color: "#49454F" },
+      textStyle: { color: getStyle("--m3-on-surface-variant") },
     },
     grid: {
       top: "22%",
@@ -59,22 +61,22 @@ const renderBarChart = (data: { name: string; yield: number; area: number }[]) =
     xAxis: {
       type: "category",
       data: data.map((d) => d.name),
-      axisLabel: { color: "#49454F" },
-      axisLine: { lineStyle: { color: "#CAC4D0" } },
+      axisLabel: { color: getStyle("--m3-on-surface-variant") },
+      axisLine: { lineStyle: { color: getStyle("--m3-outline") } },
     },
     yAxis: [
       {
         type: "value",
         name: "产量(kg)",
         position: "left",
-        axisLabel: { color: "#49454F" },
-        splitLine: { lineStyle: { color: "#ECE6F0" } },
+        axisLabel: { color: getStyle("--m3-on-surface-variant") },
+        splitLine: { lineStyle: { color: getStyle("--m3-surface-container-high") } },
       },
       {
         type: "value",
         name: "面积(亩)",
         position: "right",
-        axisLabel: { color: "#49454F" },
+        axisLabel: { color: getStyle("--m3-on-surface-variant") },
         splitLine: { show: false },
       },
     ],
@@ -86,8 +88,8 @@ const renderBarChart = (data: { name: string; yield: number; area: number }[]) =
         itemStyle: {
           borderRadius: [8, 8, 0, 0],
           color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
-            { offset: 0, color: "#6750A4" },
-            { offset: 1, color: "#9A82DB" },
+            { offset: 0, color: getStyle("--el-color-primary") },
+            { offset: 1, color: getStyle("--el-color-primary-light-3") },
           ]),
         },
         barWidth: "30%",
@@ -100,8 +102,8 @@ const renderBarChart = (data: { name: string; yield: number; area: number }[]) =
         itemStyle: {
           borderRadius: [8, 8, 0, 0],
           color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
-            { offset: 0, color: "#386A20" },
-            { offset: 1, color: "#6AAE50" },
+            { offset: 0, color: getStyle("--el-color-success") },
+            { offset: 1, color: getStyle("--el-color-success-light-3") },
           ]),
         },
         barWidth: "30%",
@@ -118,17 +120,17 @@ const renderLineChart = (data: { date: string; temperature: number; humidity: nu
     title: {
       text: "近7天气象趋势",
       left: "center",
-      textStyle: { color: "#1D1B20", fontWeight: 600 },
+      textStyle: { color: getStyle("--m3-on-surface"), fontWeight: 600 },
     },
     tooltip: {
       trigger: "axis",
-      backgroundColor: "#ffffff",
-      borderColor: "#CAC4D0",
-      textStyle: { color: "#1D1B20" },
+      backgroundColor: getStyle("--m3-surface-container-high"),
+      borderColor: getStyle("--m3-outline"),
+      textStyle: { color: getStyle("--m3-on-surface") },
     },
     legend: {
       top: 36,
-      textStyle: { color: "#49454F" },
+      textStyle: { color: getStyle("--m3-on-surface-variant") },
     },
     grid: {
       top: "22%",
@@ -140,22 +142,22 @@ const renderLineChart = (data: { date: string; temperature: number; humidity: nu
     xAxis: {
       type: "category",
       data: data.map((d) => d.date),
-      axisLabel: { color: "#49454F" },
-      axisLine: { lineStyle: { color: "#CAC4D0" } },
+      axisLabel: { color: getStyle("--m3-on-surface-variant") },
+      axisLine: { lineStyle: { color: getStyle("--m3-outline") } },
     },
     yAxis: [
       {
         type: "value",
         name: "温度(°C)/湿度(%)",
         position: "left",
-        axisLabel: { color: "#49454F" },
-        splitLine: { lineStyle: { color: "#ECE6F0" } },
+        axisLabel: { color: getStyle("--m3-on-surface-variant") },
+        splitLine: { lineStyle: { color: getStyle("--m3-surface-container-high") } },
       },
       {
         type: "value",
         name: "降雨量(mm)",
         position: "right",
-        axisLabel: { color: "#49454F" },
+        axisLabel: { color: getStyle("--m3-on-surface-variant") },
         splitLine: { show: false },
       },
     ],
@@ -222,7 +224,7 @@ onUnmounted(() => {
   <div class="m3-dashboard">
     <el-row :gutter="24" class="stat-row">
       <el-col :xs="24" :sm="12" :lg="6">
-        <el-card shadow="never" class="m3-card stat-card">
+        <el-card shadow="never" class="stat-card">
           <div class="stat-item">
             <div class="stat-icon" style="background: linear-gradient(135deg, #6750A4, #9A82DB)">
               <el-icon size="28" color="#fff"><TrendCharts /></el-icon>
@@ -235,7 +237,7 @@ onUnmounted(() => {
         </el-card>
       </el-col>
       <el-col :xs="24" :sm="12" :lg="6">
-        <el-card shadow="never" class="m3-card stat-card">
+        <el-card shadow="never" class="stat-card">
           <div class="stat-item">
             <div class="stat-icon" style="background: linear-gradient(135deg, #386A20, #6AAE50)">
               <el-icon size="28" color="#fff"><Grid /></el-icon>
@@ -248,7 +250,7 @@ onUnmounted(() => {
         </el-card>
       </el-col>
       <el-col :xs="24" :sm="12" :lg="6">
-        <el-card shadow="never" class="m3-card stat-card">
+        <el-card shadow="never" class="stat-card">
           <div class="stat-item">
             <div class="stat-icon" style="background: linear-gradient(135deg, #8B5000, #C77D28)">
               <el-icon size="28" color="#fff"><Box /></el-icon>
@@ -261,7 +263,7 @@ onUnmounted(() => {
         </el-card>
       </el-col>
       <el-col :xs="24" :sm="12" :lg="6">
-        <el-card shadow="never" class="m3-card stat-card">
+        <el-card shadow="never" class="stat-card">
           <div class="stat-item">
             <div class="stat-icon" style="background: linear-gradient(135deg, #006A6A, #4DB6B6)">
               <el-icon size="28" color="#fff"><OfficeBuilding /></el-icon>
@@ -276,10 +278,10 @@ onUnmounted(() => {
     </el-row>
 
     <div class="m3-grid-charts">
-      <el-card shadow="never" class="m3-card chart-card">
+      <el-card shadow="never" class="chart-card">
         <div ref="barChartRef" class="chart-container"></div>
       </el-card>
-      <el-card shadow="never" class="m3-card chart-card">
+      <el-card shadow="never" class="chart-card">
         <div ref="lineChartRef" class="chart-container"></div>
       </el-card>
     </div>
@@ -289,7 +291,7 @@ onUnmounted(() => {
 <style scoped>
 .m3-dashboard {
   padding: 24px;
-  background-color: var(--m3-surface);
+  background-color: var(--m3-bg-color);
   min-height: calc(100vh - 64px);
 }
 

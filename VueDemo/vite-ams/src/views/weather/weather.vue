@@ -14,6 +14,8 @@ let chart: echarts.ECharts;
 
 const m3Colors = ["#8B5000", "#6750A4", "#49454F", "#386A20"];
 
+const getStyle = (varName: string) => getComputedStyle(document.documentElement).getPropertyValue(varName).trim();
+
 const formData = ref<Partial<WeatherItem>>({});
 const formRules = {
   date: [{ required: true, message: "请选择日期", trigger: "change" }],
@@ -43,20 +45,20 @@ const renderChart = (data: WeatherItem[]) => {
     title: {
       text: "气象数据趋势",
       left: "center",
-      textStyle: { color: "#1D1B20", fontWeight: 600 },
+      textStyle: { color: getStyle("--m3-on-surface"), fontWeight: 600 },
     },
     tooltip: {
       trigger: "axis",
-      backgroundColor: "#ffffff",
-      borderColor: "#CAC4D0",
-      textStyle: { color: "#1D1B20" },
+      backgroundColor: getStyle("--m3-surface-container-high"),
+      borderColor: getStyle("--m3-outline"),
+      textStyle: { color: getStyle("--m3-on-surface") },
     },
     legend: {
       top: 36,
-      textStyle: { color: "#49454F" },
+      textStyle: { color: getStyle("--m3-on-surface-variant") },
     },
     grid: {
-      top: "20%",
+      top: "22%",
       left: "3%",
       right: "4%",
       bottom: "5%",
@@ -65,22 +67,22 @@ const renderChart = (data: WeatherItem[]) => {
     xAxis: {
       type: "category",
       data: sorted.map((d) => d.date),
-      axisLabel: { color: "#49454F" },
-      axisLine: { lineStyle: { color: "#CAC4D0" } },
+      axisLabel: { color: getStyle("--m3-on-surface-variant") },
+      axisLine: { lineStyle: { color: getStyle("--m3-outline") } },
     },
     yAxis: [
       {
         type: "value",
         name: "温度(°C)/湿度(%)",
         position: "left",
-        axisLabel: { color: "#49454F" },
-        splitLine: { lineStyle: { color: "#ECE6F0" } },
+        axisLabel: { color: getStyle("--m3-on-surface-variant") },
+        splitLine: { lineStyle: { color: getStyle("--m3-surface-container-high") } },
       },
       {
         type: "value",
         name: "降雨量(mm)/风速(m/s)",
         position: "right",
-        axisLabel: { color: "#49454F" },
+        axisLabel: { color: getStyle("--m3-on-surface-variant") },
         splitLine: { show: false },
       },
     ],
@@ -198,11 +200,11 @@ onUnmounted(() => {
 
 <template>
   <div class="m3-page">
-    <el-card shadow="never" class="m3-card chart-card">
+    <el-card shadow="never" class="chart-card">
       <div ref="chartRef" class="chart-container"></div>
     </el-card>
 
-    <el-card shadow="never" class="m3-card">
+    <el-card shadow="never">
       <template #header>
         <div class="card-header">
           <span class="card-title">气象数据</span>
@@ -261,7 +263,7 @@ onUnmounted(() => {
 <style scoped>
 .m3-page {
   padding: 24px;
-  background-color: var(--m3-surface);
+  background-color: var(--m3-bg-color);
   min-height: calc(100vh - 64px);
   display: flex;
   flex-direction: column;

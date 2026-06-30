@@ -5,13 +5,22 @@
 }
 
 :root {
+  /* ================= Light Mode (默认亮色) ================= */
+  --m3-bg-color: #FEF7FF;
+  --m3-surface: #F9F6FA;
+  --m3-surface-container: #F3EDF7;
+  --m3-surface-container-high: #ECE6F0;
+  --m3-on-surface: #1D1B20;
+  --m3-on-surface-variant: #49454F;
+  --m3-outline: #CAC4D0;
+
   /* M3 Expressive 核心圆角规范 */
   --el-border-radius-base: 10px;
   --el-border-radius-small: 6px;
   --el-border-radius-large: 16px;
   --el-border-radius-round: 24px;
 
-  /* M3 丰盈色系 (Expressive Palette) */
+  /* M3 丰盈色系 */
   --el-color-primary: #6750A4;
   --el-color-primary-light-3: #9A82DB;
   --el-color-primary-light-5: #B69DF8;
@@ -20,42 +29,65 @@
   --el-color-primary-light-9: #F6EDFF;
   --el-color-primary-dark-2: #4F378B;
 
-  /* 农业系统专属 M3 森林绿 */
   --el-color-success: #386A20;
   --el-color-success-light-3: #6AAE50;
-  --el-color-success-light-5: #8BC878;
   --el-color-success-light-9: #E8F5E0;
 
-  /* M3 温暖橙色 */
   --el-color-warning: #8B5000;
   --el-color-warning-light-3: #C77D28;
   --el-color-warning-light-9: #FFF3E0;
 
-  /* M3 错误红 */
   --el-color-danger: #BA1A1A;
   --el-color-danger-light-3: #DE3730;
   --el-color-danger-light-9: #FFDAD6;
 
-  /* M3 阴影 - 更扁平、更柔和 */
+  /* Element Plus 底层变量接管 */
+  --el-text-color-primary: var(--m3-on-surface);
+  --el-text-color-regular: var(--m3-on-surface-variant);
+  --el-bg-color: var(--m3-bg-color);
+  --el-bg-color-overlay: var(--m3-surface-container);
+  --el-border-color: var(--m3-outline);
+  --el-fill-color-blank: var(--m3-surface);
+
+  /* M3 阴影 */
   --el-box-shadow-light: 0px 1px 3px 1px rgba(0, 0, 0, 0.15), 0px 1px 2px 0px rgba(0, 0, 0, 0.30);
   --el-box-shadow: 0px 2px 6px 2px rgba(0, 0, 0, 0.15), 0px 1px 2px 0px rgba(0, 0, 0, 0.30);
-  --el-box-shadow-dark: 0px 4px 8px 3px rgba(0, 0, 0, 0.15), 0px 1px 3px 0px rgba(0, 0, 0, 0.30);
+}
 
-  /* M3 Surface 色 */
-  --m3-surface: #FEF7FF;
-  --m3-surface-container: #F3EDF7;
-  --m3-surface-container-high: #ECE6F0;
-  --m3-on-surface: #1D1B20;
-  --m3-on-surface-variant: #49454F;
-  --m3-outline: #CAC4D0;
-  --m3-outline-variant: #79747E;
+:root[data-theme='dark'] {
+  /* ================= Dark Mode (深色模式) ================= */
+  --m3-bg-color: #141218;
+  --m3-surface: #141218;
+  --m3-surface-container: #211F26;
+  --m3-surface-container-high: #2B2930;
+  --m3-on-surface: #E6E0E9;
+  --m3-on-surface-variant: #CAC4D0;
+  --m3-outline: #938F99;
+
+  --el-color-primary: #D0BCFF;
+  --el-color-primary-light-3: #B69DF8;
+  --el-color-primary-light-8: #4A4458;
+  --el-color-primary-dark-2: #EADDFF;
+
+  --el-color-success: #A8D590;
+  --el-color-warning: #FFB74D;
+  --el-color-danger: #F2B8B5;
+
+  --el-text-color-primary: var(--m3-on-surface);
+  --el-text-color-regular: var(--m3-on-surface-variant);
+  --el-bg-color: var(--m3-bg-color);
+  --el-bg-color-overlay: var(--m3-surface-container);
+  --el-border-color: var(--m3-outline);
+  --el-fill-color-blank: var(--m3-surface-container);
 }
 
 html, body {
   width: 100%;
   height: 100%;
   font-family: 'Roboto', 'Noto Sans SC', 'Helvetica Neue', Helvetica, 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', Arial, sans-serif;
-  background-color: var(--m3-surface);
+  background-color: var(--m3-bg-color);
+  color: var(--m3-on-surface);
+  transition: background-color 0.3s ease;
 }
 
 #app {
@@ -63,7 +95,30 @@ html, body {
   height: 100%;
 }
 
-/* M3 全局滚动条美化 */
+/* ================= View Transition API 全屏遮罩动画 ================= */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation: none;
+  mix-blend-mode: normal;
+}
+
+::view-transition-old(root) {
+  z-index: 1;
+}
+
+::view-transition-new(root) {
+  z-index: 2;
+}
+
+[data-theme='dark']::view-transition-old(root) {
+  z-index: 2;
+}
+
+[data-theme='dark']::view-transition-new(root) {
+  z-index: 1;
+}
+
+/* ================= 全局滚动条 ================= */
 ::-webkit-scrollbar {
   width: 8px;
   height: 8px;
@@ -78,11 +133,12 @@ html, body {
   background-color: var(--m3-surface-container);
 }
 
-/* M3 全局卡片样式覆盖 */
+/* ================= 全局组件覆盖 ================= */
 .el-card {
   border-radius: 16px !important;
   border: 1px solid var(--m3-surface-container-high) !important;
   box-shadow: none !important;
+  background-color: var(--m3-surface) !important;
   transition: box-shadow 0.2s ease, transform 0.2s ease !important;
 }
 
@@ -90,9 +146,8 @@ html, body {
   box-shadow: var(--el-box-shadow-light) !important;
 }
 
-/* M3 全局按钮样式覆盖 */
 .el-button {
-  border-radius: 20px !important;
+  border-radius: 100px !important;
   font-weight: 500 !important;
   letter-spacing: 0.1px !important;
 }
@@ -106,19 +161,25 @@ html, body {
   background-color: var(--el-color-primary-dark-2) !important;
 }
 
-/* M3 全局输入框样式覆盖 */
 .el-input__wrapper {
   border-radius: 12px !important;
+  background-color: var(--m3-surface-container) !important;
+  box-shadow: none !important;
+}
+
+.el-input__wrapper.is-focus {
+  background-color: var(--m3-surface) !important;
+  box-shadow: 0 0 0 2px var(--el-color-primary) inset !important;
 }
 
 .el-select .el-input__wrapper {
   border-radius: 12px !important;
 }
 
-/* M3 全局弹窗样式覆盖 */
 .el-dialog {
   border-radius: 20px !important;
   overflow: hidden;
+  background-color: var(--m3-surface) !important;
 }
 
 .el-dialog__header {
@@ -133,11 +194,13 @@ html, body {
   padding: 16px 24px 24px !important;
 }
 
-/* M3 全局表格样式覆盖 */
 .el-table {
   border-radius: 12px !important;
   overflow: hidden;
   border: 1px solid var(--m3-surface-container-high);
+  --el-table-bg-color: var(--m3-surface);
+  --el-table-tr-bg-color: var(--m3-surface);
+  --el-table-header-bg-color: var(--m3-surface-container);
 }
 
 .el-table th.el-table__cell {
@@ -150,17 +213,16 @@ html, body {
   border-bottom-color: var(--m3-surface-container-high) !important;
 }
 
-/* M3 全局标签样式覆盖 */
 .el-tag {
   border-radius: 8px !important;
 }
 
-/* M3 全局下拉菜单样式覆盖 */
 .el-dropdown-menu {
   padding: 8px !important;
   border-radius: 16px !important;
   border: 1px solid var(--m3-outline) !important;
   box-shadow: var(--el-box-shadow) !important;
+  background-color: var(--m3-surface) !important;
 }
 
 .el-dropdown-menu__item {
@@ -169,9 +231,14 @@ html, body {
   display: flex !important;
   align-items: center !important;
   gap: 12px !important;
+  color: var(--m3-on-surface) !important;
 }
 
-/* M3 NProgress 进度条 */
+.el-dropdown-menu__item:hover {
+  background-color: var(--m3-surface-container-high) !important;
+}
+
+/* NProgress */
 #nprogress .bar {
   background: var(--el-color-primary) !important;
   height: 3px !important;

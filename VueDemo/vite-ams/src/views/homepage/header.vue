@@ -2,10 +2,11 @@
 import { ref, onMounted, onUnmounted } from "vue";
 import { useRouter } from "vue-router";
 import { useUserStore } from "../../store/user";
-import { ArrowDown, User, SwitchButton } from "@element-plus/icons-vue";
+import { ArrowDown, User, SwitchButton, Sunny, Moon } from "@element-plus/icons-vue";
 
 const router = useRouter();
 const userStore = useUserStore();
+const isDark = ref(false);
 const currentTime = ref(new Date().toLocaleTimeString("zh-CN"));
 const currentDate = ref(
   new Date().toLocaleDateString("zh-CN", {
@@ -18,14 +19,52 @@ const currentDate = ref(
 let timer: ReturnType<typeof setInterval>;
 
 onMounted(() => {
+  const savedTheme = localStorage.getItem("theme");
+  const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+  isDark.value = savedTheme === "dark" || (!savedTheme && prefersDark);
+  document.documentElement.setAttribute("data-theme", isDark.value ? "dark" : "light");
+
   timer = setInterval(() => {
     currentTime.value = new Date().toLocaleTimeString("zh-CN");
   }, 1000);
 });
 
-onUnmounted(() => {
-  clearInterval(timer);
-});
+onUnmounted(() => clearInterval(timer));
+
+const toggleTheme = (event: MouseEvent) => {
+  const x = event.clientX;
+  const y = event.clientY;
+  const endRadius = Math.hypot(Math.max(x, innerWidth - x), Math.max(y, innerHeight - y));
+  const isDarkNext = !isDark.value;
+
+  if (!document.startViewTransition) {
+    isDark.value = isDarkNext;
+    document.documentElement.setAttribute("data-theme", isDarkNext ? "dark" : "light");
+    localStorage.setItem("theme", isDarkNext ? "dark" : "light");
+    return;
+  }
+
+  const transition = document.startViewTransition(() => {
+    isDark.value = isDarkNext;
+    document.documentElement.setAttribute("data-theme", isDarkNext ? "dark" : "light");
+    localStorage.setItem("theme", isDarkNext ? "dark" : "light");
+  });
+
+  transition.ready.then(() => {
+    const clipPath = [
+      `circle(0px at ${x}px ${y}px)`,
+      `circle(${endRadius}px at ${x}px ${y}px)`,
+    ];
+    document.documentElement.animate(
+      { clipPath: isDarkNext ? clipPath : [...clipPath].reverse() },
+      {
+        duration: 500,
+        easing: "ease-in-out",
+        pseudoElement: isDarkNext ? "::view-transition-new(root)" : "::view-transition-old(root)",
+      }
+    );
+  });
+};
 
 const handleCommand = (command: string) => {
   if (command === "logout") {
@@ -48,11 +87,18 @@ const handleCommand = (command: string) => {
         <div class="date">{{ currentDate }}</div>
       </div>
 
+      <el-button
+        circle
+        class="theme-toggle-btn"
+        @click="toggleTheme"
+        :icon="isDark ? Moon : Sunny"
+      />
+
       <el-divider direction="vertical" />
 
       <el-dropdown @command="handleCommand" trigger="click" popper-class="m3-pop-dropdown">
         <div class="m3-user-pill">
-          <el-avatar :size="32" style="background-color: var(--el-color-primary)">
+          <el-avatar :size="32" style="background-color: var(--el-color-primary); color: #fff">
             {{ userStore.user?.username?.charAt(0) }}
           </el-avatar>
           <div class="user-info">
@@ -83,7 +129,7 @@ const handleCommand = (command: string) => {
   align-items: center;
   height: 64px;
   padding: 0 24px;
-  background-color: #ffffff;
+  background-color: var(--m3-surface);
   border-bottom: 1px solid var(--m3-outline);
 }
 
@@ -94,8 +140,8 @@ const handleCommand = (command: string) => {
 }
 
 .system-badge {
-  background-color: var(--el-color-primary-light-8);
-  color: var(--el-color-primary-dark-2);
+  background-color: var(--el-color-primary);
+  color: #fff;
   padding: 4px 12px;
   border-radius: 100px;
   font-weight: 700;
@@ -132,6 +178,17 @@ const handleCommand = (command: string) => {
   color: var(--m3-on-surface-variant);
 }
 
+.theme-toggle-btn {
+  border: none !important;
+  background-color: var(--m3-surface-container) !important;
+  color: var(--m3-on-surface) !important;
+  font-size: 18px;
+}
+
+.theme-toggle-btn:hover {
+  background-color: var(--m3-surface-container-high) !important;
+}
+
 .el-divider {
   border-color: var(--m3-outline);
   height: 32px;
@@ -143,14 +200,15 @@ const handleCommand = (command: string) => {
   gap: 10px;
   padding: 6px 16px 6px 6px;
   border-radius: 100px;
-  background-color: var(--m3-surface-container);
+  border: 1px solid var(--m3-outline);
+  background-color: var(--m3-surface);
   transition: all 0.2s cubic-bezier(0.2, 0, 0, 1);
   cursor: pointer;
   user-select: none;
 }
 
 .m3-user-pill:hover {
-  background-color: var(--el-color-primary-light-8);
+  background-color: var(--m3-surface-container-high);
 }
 
 .user-info {

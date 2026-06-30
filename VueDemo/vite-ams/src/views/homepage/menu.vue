@@ -2,7 +2,17 @@
 import { useMenusStore } from "../../store/menus";
 import { useRouter, useRoute } from "vue-router";
 import { computed, markRaw } from "vue";
-import { DataLine, Crop, Sunny, Box, Setting, Menu } from "@element-plus/icons-vue";
+import {
+  DataLine,
+  Crop,
+  Sunny,
+  Box,
+  Setting,
+  Menu,
+  Odometer,
+  Location,
+  User,
+} from "@element-plus/icons-vue";
 
 const menuStore = useMenusStore();
 const router = useRouter();
@@ -16,6 +26,15 @@ const menuIcons: Record<number, any> = {
   3: markRaw(Sunny),
   4: markRaw(Box),
   5: markRaw(Setting),
+};
+
+const childIcons: Record<string, any> = {
+  "/homepage/dashboard": markRaw(Odometer),
+  "/homepage/crops": markRaw(Crop),
+  "/homepage/fields": markRaw(Location),
+  "/homepage/weather": markRaw(Sunny),
+  "/homepage/supplies": markRaw(Box),
+  "/homepage/users": markRaw(User),
 };
 
 const handleMenuClick = (path: string) => {
@@ -46,7 +65,10 @@ const handleMenuClick = (path: string) => {
           :index="submenu.path"
           @click="handleMenuClick(submenu.path)"
         >
-          {{ submenu.title }}
+          <el-icon><component :is="childIcons[submenu.path] || Menu" /></el-icon>
+          <template #title>
+            <span>{{ submenu.title }}</span>
+          </template>
         </el-menu-item>
       </el-sub-menu>
     </el-menu>
@@ -87,7 +109,6 @@ const handleMenuClick = (path: string) => {
   line-height: 44px !important;
   color: var(--m3-on-surface-variant) !important;
   transition: all 0.2s ease;
-  padding-left: 52px !important;
 }
 
 :deep(.el-menu-item:hover) {
@@ -95,8 +116,12 @@ const handleMenuClick = (path: string) => {
 }
 
 :deep(.el-menu-item.is-active) {
-  background-color: var(--el-color-primary-light-8) !important;
-  color: var(--el-color-primary-dark-2) !important;
+  background-color: var(--el-color-primary) !important;
+  color: #fff !important;
   font-weight: 600;
+}
+
+:deep(.el-menu-item .el-icon) {
+  margin-right: 8px;
 }
 </style>

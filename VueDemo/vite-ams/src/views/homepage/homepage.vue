@@ -44,7 +44,7 @@ import Header from "./header.vue";
 
 .m3-sidebar {
   width: 240px;
-  background-color: var(--m3-surface-container);
+  background-color: var(--m3-surface);
   display: flex;
   flex-direction: column;
   flex-shrink: 0;

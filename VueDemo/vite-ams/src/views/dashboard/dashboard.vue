@@ -18,14 +18,7 @@ const lineChartRef = ref<HTMLElement>();
 let barChart: echarts.ECharts;
 let lineChart: echarts.ECharts;
 
-const m3Colors = [
-  "#6750A4",
-  "#386A20",
-  "#8B5000",
-  "#BA1A1A",
-  "#006A6A",
-  "#7D5260",
-];
+const m3Colors = ["#6750A4", "#386A20", "#8B5000", "#BA1A1A", "#006A6A", "#7D5260"];
 
 const loadData = async () => {
   const res = await getDashboardStatsApi();
@@ -44,10 +37,7 @@ const renderBarChart = (data: { name: string; yield: number; area: number }[]) =
     title: {
       text: "作物产量与种植面积",
       left: "center",
-      textStyle: {
-        color: "#1D1B20",
-        fontWeight: 600,
-      },
+      textStyle: { color: "#1D1B20", fontWeight: 600 },
     },
     tooltip: {
       trigger: "axis",
@@ -60,7 +50,7 @@ const renderBarChart = (data: { name: string; yield: number; area: number }[]) =
       textStyle: { color: "#49454F" },
     },
     grid: {
-      top: "20%",
+      top: "22%",
       left: "3%",
       right: "4%",
       bottom: "5%",
@@ -128,10 +118,7 @@ const renderLineChart = (data: { date: string; temperature: number; humidity: nu
     title: {
       text: "近7天气象趋势",
       left: "center",
-      textStyle: {
-        color: "#1D1B20",
-        fontWeight: 600,
-      },
+      textStyle: { color: "#1D1B20", fontWeight: 600 },
     },
     tooltip: {
       trigger: "axis",
@@ -144,7 +131,7 @@ const renderLineChart = (data: { date: string; temperature: number; humidity: nu
       textStyle: { color: "#49454F" },
     },
     grid: {
-      top: "20%",
+      top: "22%",
       left: "3%",
       right: "4%",
       bottom: "5%",
@@ -182,7 +169,7 @@ const renderLineChart = (data: { date: string; temperature: number; humidity: nu
         itemStyle: { color: "#8B5000" },
         areaStyle: {
           color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
-            { offset: 0, color: "rgba(139, 80, 0, 0.3)" },
+            { offset: 0, color: "rgba(139, 80, 0, 0.2)" },
             { offset: 1, color: "rgba(139, 80, 0, 0.02)" },
           ]),
         },
@@ -196,7 +183,7 @@ const renderLineChart = (data: { date: string; temperature: number; humidity: nu
         itemStyle: { color: "#6750A4" },
         areaStyle: {
           color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
-            { offset: 0, color: "rgba(103, 80, 164, 0.3)" },
+            { offset: 0, color: "rgba(103, 80, 164, 0.2)" },
             { offset: 1, color: "rgba(103, 80, 164, 0.02)" },
           ]),
         },
@@ -288,18 +275,14 @@ onUnmounted(() => {
       </el-col>
     </el-row>
 
-    <el-row :gutter="24" class="chart-row">
-      <el-col :xs="24" :lg="12">
-        <el-card shadow="never" class="m3-card chart-card">
-          <div ref="barChartRef" class="chart-container"></div>
-        </el-card>
-      </el-col>
-      <el-col :xs="24" :lg="12">
-        <el-card shadow="never" class="m3-card chart-card">
-          <div ref="lineChartRef" class="chart-container"></div>
-        </el-card>
-      </el-col>
-    </el-row>
+    <div class="m3-grid-charts">
+      <el-card shadow="never" class="m3-card chart-card">
+        <div ref="barChartRef" class="chart-container"></div>
+      </el-card>
+      <el-card shadow="never" class="m3-card chart-card">
+        <div ref="lineChartRef" class="chart-container"></div>
+      </el-card>
+    </div>
   </div>
 </template>
 
@@ -358,17 +341,19 @@ onUnmounted(() => {
   margin-top: 4px;
 }
 
-.chart-row {
-  margin-bottom: 24px;
+.m3-grid-charts {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
+  gap: 24px;
 }
 
 .chart-card {
-  margin-bottom: 24px;
+  margin-bottom: 0;
 }
 
 .chart-container {
+  width: 100%;
   height: 360px;
-  min-height: 280px;
 }
 
 @media (max-width: 768px) {
@@ -383,6 +368,10 @@ onUnmounted(() => {
   .stat-icon {
     width: 48px;
     height: 48px;
+  }
+
+  .m3-grid-charts {
+    grid-template-columns: 1fr;
   }
 
   .chart-container {

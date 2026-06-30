@@ -2,7 +2,7 @@
 import { ref, onMounted, onUnmounted } from "vue";
 import { useRouter } from "vue-router";
 import { useUserStore } from "../../store/user";
-import { Promotion, SwitchButton, User, ArrowDown } from "@element-plus/icons-vue";
+import { ArrowDown, User, SwitchButton } from "@element-plus/icons-vue";
 
 const router = useRouter();
 const userStore = useUserStore();
@@ -38,8 +38,8 @@ const handleCommand = (command: string) => {
 <template>
   <div class="m3-header">
     <div class="header-left">
-      <el-icon size="24" color="var(--el-color-primary)"><Promotion /></el-icon>
-      <h1 class="system-title">农业数据分析和管理系统</h1>
+      <span class="system-badge">AMS</span>
+      <h2 class="system-title">农业数据分析和管理系统</h2>
     </div>
 
     <div class="header-right">
@@ -50,16 +50,16 @@ const handleCommand = (command: string) => {
 
       <el-divider direction="vertical" />
 
-      <el-dropdown @command="handleCommand" trigger="click" popper-class="m3-dropdown-popper">
-        <div class="m3-user-profile">
-          <el-avatar :size="36" style="background-color: var(--el-color-primary)">
+      <el-dropdown @command="handleCommand" trigger="click" popper-class="m3-pop-dropdown">
+        <div class="m3-user-pill">
+          <el-avatar :size="32" style="background-color: var(--el-color-primary)">
             {{ userStore.user?.username?.charAt(0) }}
           </el-avatar>
           <div class="user-info">
-            <span class="username">{{ userStore.user?.username }}</span>
-            <span class="role">{{ userStore.user?.role }}</span>
+            <span class="user-name">{{ userStore.user?.username }}</span>
+            <span class="user-role">{{ userStore.user?.role }}</span>
           </div>
-          <el-icon class="arrow-icon"><ArrowDown /></el-icon>
+          <el-icon class="arrow"><ArrowDown /></el-icon>
         </div>
         <template #dropdown>
           <el-dropdown-menu>
@@ -81,7 +81,6 @@ const handleCommand = (command: string) => {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  width: 100%;
   height: 64px;
   padding: 0 24px;
   background-color: #ffffff;
@@ -94,12 +93,21 @@ const handleCommand = (command: string) => {
   gap: 12px;
 }
 
+.system-badge {
+  background-color: var(--el-color-primary-light-8);
+  color: var(--el-color-primary-dark-2);
+  padding: 4px 12px;
+  border-radius: 100px;
+  font-weight: 700;
+  font-size: 12px;
+  letter-spacing: 0.5px;
+}
+
 .system-title {
   margin: 0;
-  font-size: 20px;
+  font-size: 18px;
   font-weight: 600;
   color: var(--m3-on-surface);
-  white-space: nowrap;
 }
 
 .header-right {
@@ -129,18 +137,20 @@ const handleCommand = (command: string) => {
   height: 32px;
 }
 
-.m3-user-profile {
+.m3-user-pill {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 6px 16px 6px 8px;
-  border-radius: 20px;
-  transition: all 0.2s ease;
+  gap: 10px;
+  padding: 6px 16px 6px 6px;
+  border-radius: 100px;
+  background-color: var(--m3-surface-container);
+  transition: all 0.2s cubic-bezier(0.2, 0, 0, 1);
   cursor: pointer;
+  user-select: none;
 }
 
-.m3-user-profile:hover {
-  background-color: var(--el-color-primary-light-9);
+.m3-user-pill:hover {
+  background-color: var(--el-color-primary-light-8);
 }
 
 .user-info {
@@ -148,25 +158,51 @@ const handleCommand = (command: string) => {
   flex-direction: column;
 }
 
-.username {
+.user-name {
   font-size: 14px;
   font-weight: 500;
   color: var(--m3-on-surface);
   line-height: 1.2;
 }
 
-.role {
-  font-size: 12px;
+.user-role {
+  font-size: 11px;
   color: var(--m3-on-surface-variant);
 }
 
-.arrow-icon {
+.arrow {
   font-size: 12px;
   color: var(--m3-on-surface-variant);
   transition: transform 0.2s ease;
 }
 
-.m3-user-profile:hover .arrow-icon {
+.m3-user-pill:hover .arrow {
   transform: rotate(180deg);
+}
+</style>
+
+<style>
+.m3-pop-dropdown .el-dropdown-menu {
+  padding: 8px !important;
+  border-radius: 20px !important;
+  box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.1) !important;
+  border: 1px solid var(--m3-outline) !important;
+}
+
+.m3-pop-dropdown .el-dropdown-menu__item {
+  padding: 10px 18px !important;
+  border-radius: 12px !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 12px !important;
+  font-size: 14px !important;
+}
+
+.m3-pop-dropdown .el-dropdown-menu__item:hover {
+  background-color: var(--m3-surface-container) !important;
+}
+
+.m3-pop-dropdown .el-dropdown-menu__item.is-disabled {
+  color: var(--m3-on-surface-variant) !important;
 }
 </style>

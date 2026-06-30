@@ -7,6 +7,9 @@ import {
 import Cookies from "js-cookie";
 import NProgress from "nprogress";
 import "nprogress/nprogress.css";
+import { useMenusStore } from "../store/menus";
+import { useUserStore } from "../store/user";
+import { getUserMenusApi } from "../request/api";
 
 NProgress.configure({ showSpinner: false });
 
@@ -73,9 +76,32 @@ export const resetDynamicRoutes = () => {
   dynamicRoutesAdded = false;
 };
 
-router.beforeEach((to, _from, next) => {
+const initUserPermissions = async (): Promise<boolean> => {
+  const menuStore = useMenusStore();
+  const userStore = useUserStore();
+
+  try {
+    const menuRes = await getUserMenusApi();
+    if (menuRes.code === 200) {
+      menuStore.updateMenu(menuRes.menus);
+
+      const menuPaths = menuRes.menus.flatMap(
+        (m) => m.children?.map((c) => c.path) || []
+      );
+      addDynamicRoutes(menuPaths);
+
+      return true;
+    }
+    return false;
+  } catch {
+    return false;
+  }
+};
+
+router.beforeEach(async (to, _from, next) => {
   NProgress.start();
   const token = Cookies.get("token");
+  const menuStore = useMenusStore();
 
   if (to.path === "/login") {
     if (token) {
@@ -86,7 +112,18 @@ router.beforeEach((to, _from, next) => {
   } else if (!token) {
     next("/login");
   } else {
-    next();
+    if (menuStore.homepageMenu.length === 0) {
+      const success = await initUserPermissions();
+      if (success) {
+        next({ ...to, replace: true });
+      } else {
+        Cookies.remove("token");
+        resetDynamicRoutes();
+        next("/login");
+      }
+    } else {
+      next();
+    }
   }
 });
 

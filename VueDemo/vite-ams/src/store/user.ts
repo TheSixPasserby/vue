@@ -1,27 +1,29 @@
 import { defineStore } from "pinia";
 import { ref } from "vue";
 import Cookies from "js-cookie";
+import { resetDynamicRoutes } from "../router";
 
-export interface UserInfoItf {
+export interface UserInfo {
   username: string;
   role: string;
 }
 
 export const useUserStore = defineStore("user", () => {
-  const user = ref<UserInfoItf>();
+  const user = ref<UserInfo>();
 
-  function updateUerInfo(userparam: UserInfoItf) {
-    user.value = userparam;
+  function updateUserInfo(userParam: UserInfo) {
+    user.value = userParam;
   }
 
-  function loginout() {
+  function logout() {
     user.value = undefined;
     Cookies.remove("token");
+    resetDynamicRoutes();
   }
 
   return {
     user,
-    updateUerInfo,
-    loginout,
+    updateUserInfo,
+    logout,
   };
 });

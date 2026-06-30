@@ -1,21 +1,33 @@
+require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
 const jwt = require("jsonwebtoken");
+const bcrypt = require("bcryptjs");
 
 const app = express();
-const PORT = 3000;
-const SECRET_KEY = "express-demo-2026-6-15-!@#123-company-cdnykjzyxy";
+const PORT = process.env.PORT || 3000;
+const SECRET_KEY = process.env.JWT_SECRET;
+
+if (!SECRET_KEY) {
+  console.error("错误: 未设置 JWT_SECRET 环境变量");
+  process.exit(1);
+}
 
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// ==================== Mock 数据库 ====================
+// ==================== 密码哈希工具 ====================
+
+const hashPassword = (password) => bcrypt.hashSync(password, 10);
+const comparePassword = (password, hash) => bcrypt.compareSync(password, hash);
+
+// ==================== Mock 数据库（密码已哈希）====================
 
 let users = [
-  { id: 1, username: "admin", psw: "111111", role: "管理员", phone: "13800138001", status: "启用" },
-  { id: 2, username: "张三", psw: "222222", role: "普通用户", phone: "13800138002", status: "启用" },
-  { id: 3, username: "李四", psw: "333333", role: "普通用户", phone: "13800138003", status: "禁用" },
+  { id: 1, username: "admin", psw: hashPassword("111111"), role: "管理员", phone: "13800138001", status: "启用" },
+  { id: 2, username: "张三", psw: hashPassword("222222"), role: "普通用户", phone: "13800138002", status: "启用" },
+  { id: 3, username: "李四", psw: hashPassword("333333"), role: "普通用户", phone: "13800138003", status: "禁用" },
 ];
 
 let crops = [
@@ -59,122 +71,128 @@ const getNextId = () => ++nextId;
 
 // ==================== 菜单数据 ====================
 
-const adminMenus = [
-  {
-    id: 1,
-    title: "数据中心",
-    children: [
-      { id: "1-1", title: "系统仪表盘", path: "/homepage/dashboard" },
-    ],
-  },
-  {
-    id: 2,
-    title: "农业生产",
-    children: [
-      { id: "2-1", title: "作物管理", path: "/homepage/crops" },
-      { id: "2-2", title: "农田管理", path: "/homepage/fields" },
-    ],
-  },
-  {
-    id: 3,
-    title: "数据监测",
-    children: [
-      { id: "3-1", title: "气象数据", path: "/homepage/weather" },
-    ],
-  },
-  {
-    id: 4,
-    title: "资源管理",
-    children: [
-      { id: "4-1", title: "农资管理", path: "/homepage/supplies" },
-    ],
-  },
-  {
-    id: 5,
-    title: "系统管理",
-    children: [
-      { id: "5-1", title: "用户管理", path: "/homepage/users" },
-    ],
-  },
-];
+const menusByRole = {
+  管理员: [
+    {
+      id: 1,
+      title: "数据中心",
+      children: [{ id: "1-1", title: "系统仪表盘", path: "/homepage/dashboard" }],
+    },
+    {
+      id: 2,
+      title: "农业生产",
+      children: [
+        { id: "2-1", title: "作物管理", path: "/homepage/crops" },
+        { id: "2-2", title: "农田管理", path: "/homepage/fields" },
+      ],
+    },
+    {
+      id: 3,
+      title: "数据监测",
+      children: [{ id: "3-1", title: "气象数据", path: "/homepage/weather" }],
+    },
+    {
+      id: 4,
+      title: "资源管理",
+      children: [{ id: "4-1", title: "农资管理", path: "/homepage/supplies" }],
+    },
+    {
+      id: 5,
+      title: "系统管理",
+      children: [{ id: "5-1", title: "用户管理", path: "/homepage/users" }],
+    },
+  ],
+  普通用户: [
+    {
+      id: 1,
+      title: "数据中心",
+      children: [{ id: "1-1", title: "系统仪表盘", path: "/homepage/dashboard" }],
+    },
+    {
+      id: 2,
+      title: "农业生产",
+      children: [
+        { id: "2-1", title: "作物管理", path: "/homepage/crops" },
+        { id: "2-2", title: "农田管理", path: "/homepage/fields" },
+      ],
+    },
+    {
+      id: 3,
+      title: "数据监测",
+      children: [{ id: "3-1", title: "气象数据", path: "/homepage/weather" }],
+    },
+  ],
+};
 
-const userMenus = [
-  {
-    id: 1,
-    title: "数据中心",
-    children: [
-      { id: "1-1", title: "系统仪表盘", path: "/homepage/dashboard" },
-    ],
-  },
-  {
-    id: 2,
-    title: "农业生产",
-    children: [
-      { id: "2-1", title: "作物管理", path: "/homepage/crops" },
-      { id: "2-2", title: "农田管理", path: "/homepage/fields" },
-    ],
-  },
-  {
-    id: 3,
-    title: "数据监测",
-    children: [
-      { id: "3-1", title: "气象数据", path: "/homepage/weather" },
-    ],
-  },
-];
-
-// ==================== 工具函数 ====================
+// ==================== 中间件 ====================
 
 const generateToken = (user) => {
   return jwt.sign({ username: user.username, role: user.role }, SECRET_KEY, { expiresIn: "12h" });
 };
 
-const verifyToken = (req) => {
+const authenticate = (req, res, next) => {
   const token = req.headers["authorization"];
-  if (!token) return null;
+  if (!token) return res.status(401).json({ code: 401, message: "未提供认证令牌" });
+
   try {
-    return jwt.verify(token, SECRET_KEY);
+    const decoded = jwt.verify(token, SECRET_KEY);
+    req.user = decoded;
+    next();
   } catch {
-    return null;
+    return res.status(401).json({ code: 401, message: "令牌无效或已过期" });
   }
 };
 
-// ==================== 登录接口 ====================
+const authorize = (...roles) => {
+  return (req, res, next) => {
+    if (!roles.includes(req.user.role)) {
+      return res.status(403).json({ code: 403, message: "权限不足，需要管理员权限" });
+    }
+    next();
+  };
+};
 
-app.post("/api/admin/data", (req, res) => {
+// ==================== 登录接口（统一）====================
+
+app.post("/api/auth/login", (req, res) => {
   const { username, psw } = req.body;
+
+  if (!username || !psw) {
+    return res.status(400).json({ code: 400, message: "用户名和密码不能为空" });
+  }
+
   const user = users.find((u) => u.username === username);
-  if (!user) return res.status(401).json({ error: "该用户不存在", code: 401 });
-  if (user.psw !== psw) return res.status(401).json({ error: "密码错误", code: 401 });
+  if (!user) {
+    return res.status(401).json({ code: 401, message: "用户名或密码错误" });
+  }
+
+  if (user.status === "禁用") {
+    return res.status(403).json({ code: 403, message: "账号已被禁用" });
+  }
+
+  if (!comparePassword(psw, user.psw)) {
+    return res.status(401).json({ code: 401, message: "用户名或密码错误" });
+  }
+
   const token = generateToken(user);
-  res.json({ code: 200, message: "登录成功", user: { username: user.username, role: user.role }, token });
+  res.json({
+    code: 200,
+    message: "登录成功",
+    user: { username: user.username, role: user.role },
+    token,
+  });
 });
 
-app.post("/api/user/data", (req, res) => {
-  const { username, psw } = req.body;
-  const user = users.find((u) => u.username === username);
-  if (!user) return res.status(401).json({ error: "该用户不存在", code: 401 });
-  if (user.psw !== psw) return res.status(401).json({ error: "密码错误", code: 401 });
-  const token = generateToken(user);
-  res.json({ code: 200, message: "登录成功", user: { username: user.username, role: user.role }, token });
-});
+// ==================== 用户菜单接口 ====================
 
-// ==================== 菜单接口 ====================
-
-app.get("/api/admin/info", (req, res) => {
-  const decoded = verifyToken(req);
-  if (!decoded) return res.status(401).json({ code: 401, message: "未授权" });
-  const user = users.find((u) => u.username === decoded.username);
-  const menus = user && user.role === "管理员" ? adminMenus : userMenus;
+app.get("/api/user/menus", authenticate, (req, res) => {
+  const menus = menusByRole[req.user.role] || [];
   res.json({ code: 200, message: "操作成功", menus });
 });
 
 // ==================== 仪表盘接口 ====================
 
-app.get("/api/dashboard/stats", (req, res) => {
-  const decoded = verifyToken(req);
-  if (!decoded) return res.status(401).json({ code: 401, message: "未授权" });
-
+app.get("/api/dashboard/stats", authenticate, (req, res) => {
   const totalCrops = crops.length;
   const totalArea = fields.reduce((sum, f) => sum + f.area, 0);
   const totalYield = crops.reduce((sum, c) => sum + c.yield, 0);
@@ -191,17 +209,19 @@ app.get("/api/dashboard/stats", (req, res) => {
       activeFields,
       totalFields: fields.length,
       cropYieldData: crops.map((c) => ({ name: c.name, yield: c.yield, area: c.area })),
-      weatherTrend: weatherData.map((w) => ({ date: w.date, temperature: w.temperature, humidity: w.humidity, rainfall: w.rainfall })),
+      weatherTrend: weatherData.map((w) => ({
+        date: w.date,
+        temperature: w.temperature,
+        humidity: w.humidity,
+        rainfall: w.rainfall,
+      })),
     },
   });
 });
 
 // ==================== 作物管理 CRUD ====================
 
-app.get("/api/crops", (req, res) => {
-  const decoded = verifyToken(req);
-  if (!decoded) return res.status(401).json({ code: 401, message: "未授权" });
-
+app.get("/api/crops", authenticate, (req, res) => {
   const { keyword, type, status } = req.query;
   let result = [...crops];
   if (keyword) result = result.filter((c) => c.name.includes(keyword));
@@ -210,19 +230,13 @@ app.get("/api/crops", (req, res) => {
   res.json({ code: 200, data: result, total: result.length });
 });
 
-app.post("/api/crops", (req, res) => {
-  const decoded = verifyToken(req);
-  if (!decoded) return res.status(401).json({ code: 401, message: "未授权" });
-
+app.post("/api/crops", authenticate, (req, res) => {
   const crop = { id: getNextId(), ...req.body };
   crops.push(crop);
   res.json({ code: 200, message: "添加成功", data: crop });
 });
 
-app.put("/api/crops/:id", (req, res) => {
-  const decoded = verifyToken(req);
-  if (!decoded) return res.status(401).json({ code: 401, message: "未授权" });
-
+app.put("/api/crops/:id", authenticate, (req, res) => {
   const id = parseInt(req.params.id);
   const index = crops.findIndex((c) => c.id === id);
   if (index === -1) return res.status(404).json({ code: 404, message: "作物不存在" });
@@ -231,10 +245,7 @@ app.put("/api/crops/:id", (req, res) => {
   res.json({ code: 200, message: "更新成功", data: crops[index] });
 });
 
-app.delete("/api/crops/:id", (req, res) => {
-  const decoded = verifyToken(req);
-  if (!decoded) return res.status(401).json({ code: 401, message: "未授权" });
-
+app.delete("/api/crops/:id", authenticate, (req, res) => {
   const id = parseInt(req.params.id);
   const index = crops.findIndex((c) => c.id === id);
   if (index === -1) return res.status(404).json({ code: 404, message: "作物不存在" });
@@ -245,10 +256,7 @@ app.delete("/api/crops/:id", (req, res) => {
 
 // ==================== 农田管理 CRUD ====================
 
-app.get("/api/fields", (req, res) => {
-  const decoded = verifyToken(req);
-  if (!decoded) return res.status(401).json({ code: 401, message: "未授权" });
-
+app.get("/api/fields", authenticate, (req, res) => {
   const { keyword, soilType, status } = req.query;
   let result = [...fields];
   if (keyword) result = result.filter((f) => f.name.includes(keyword));
@@ -257,19 +265,13 @@ app.get("/api/fields", (req, res) => {
   res.json({ code: 200, data: result, total: result.length });
 });
 
-app.post("/api/fields", (req, res) => {
-  const decoded = verifyToken(req);
-  if (!decoded) return res.status(401).json({ code: 401, message: "未授权" });
-
+app.post("/api/fields", authenticate, (req, res) => {
   const field = { id: getNextId(), ...req.body };
   fields.push(field);
   res.json({ code: 200, message: "添加成功", data: field });
 });
 
-app.put("/api/fields/:id", (req, res) => {
-  const decoded = verifyToken(req);
-  if (!decoded) return res.status(401).json({ code: 401, message: "未授权" });
-
+app.put("/api/fields/:id", authenticate, (req, res) => {
   const id = parseInt(req.params.id);
   const index = fields.findIndex((f) => f.id === id);
   if (index === -1) return res.status(404).json({ code: 404, message: "农田不存在" });
@@ -278,10 +280,7 @@ app.put("/api/fields/:id", (req, res) => {
   res.json({ code: 200, message: "更新成功", data: fields[index] });
 });
 
-app.delete("/api/fields/:id", (req, res) => {
-  const decoded = verifyToken(req);
-  if (!decoded) return res.status(401).json({ code: 401, message: "未授权" });
-
+app.delete("/api/fields/:id", authenticate, (req, res) => {
   const id = parseInt(req.params.id);
   const index = fields.findIndex((f) => f.id === id);
   if (index === -1) return res.status(404).json({ code: 404, message: "农田不存在" });
@@ -292,10 +291,7 @@ app.delete("/api/fields/:id", (req, res) => {
 
 // ==================== 气象数据 CRUD ====================
 
-app.get("/api/weather", (req, res) => {
-  const decoded = verifyToken(req);
-  if (!decoded) return res.status(401).json({ code: 401, message: "未授权" });
-
+app.get("/api/weather", authenticate, (req, res) => {
   const { startDate, endDate } = req.query;
   let result = [...weatherData];
   if (startDate) result = result.filter((w) => w.date >= startDate);
@@ -303,19 +299,13 @@ app.get("/api/weather", (req, res) => {
   res.json({ code: 200, data: result, total: result.length });
 });
 
-app.post("/api/weather", (req, res) => {
-  const decoded = verifyToken(req);
-  if (!decoded) return res.status(401).json({ code: 401, message: "未授权" });
-
+app.post("/api/weather", authenticate, (req, res) => {
   const record = { id: getNextId(), ...req.body };
   weatherData.push(record);
   res.json({ code: 200, message: "添加成功", data: record });
 });
 
-app.put("/api/weather/:id", (req, res) => {
-  const decoded = verifyToken(req);
-  if (!decoded) return res.status(401).json({ code: 401, message: "未授权" });
-
+app.put("/api/weather/:id", authenticate, (req, res) => {
   const id = parseInt(req.params.id);
   const index = weatherData.findIndex((w) => w.id === id);
   if (index === -1) return res.status(404).json({ code: 404, message: "记录不存在" });
@@ -324,10 +314,7 @@ app.put("/api/weather/:id", (req, res) => {
   res.json({ code: 200, message: "更新成功", data: weatherData[index] });
 });
 
-app.delete("/api/weather/:id", (req, res) => {
-  const decoded = verifyToken(req);
-  if (!decoded) return res.status(401).json({ code: 401, message: "未授权" });
-
+app.delete("/api/weather/:id", authenticate, (req, res) => {
   const id = parseInt(req.params.id);
   const index = weatherData.findIndex((w) => w.id === id);
   if (index === -1) return res.status(404).json({ code: 404, message: "记录不存在" });
@@ -338,10 +325,7 @@ app.delete("/api/weather/:id", (req, res) => {
 
 // ==================== 农资管理 CRUD ====================
 
-app.get("/api/supplies", (req, res) => {
-  const decoded = verifyToken(req);
-  if (!decoded) return res.status(401).json({ code: 401, message: "未授权" });
-
+app.get("/api/supplies", authenticate, (req, res) => {
   const { keyword, type } = req.query;
   let result = [...supplies];
   if (keyword) result = result.filter((s) => s.name.includes(keyword));
@@ -349,19 +333,13 @@ app.get("/api/supplies", (req, res) => {
   res.json({ code: 200, data: result, total: result.length });
 });
 
-app.post("/api/supplies", (req, res) => {
-  const decoded = verifyToken(req);
-  if (!decoded) return res.status(401).json({ code: 401, message: "未授权" });
-
+app.post("/api/supplies", authenticate, authorize("管理员"), (req, res) => {
   const supply = { id: getNextId(), ...req.body };
   supplies.push(supply);
   res.json({ code: 200, message: "添加成功", data: supply });
 });
 
-app.put("/api/supplies/:id", (req, res) => {
-  const decoded = verifyToken(req);
-  if (!decoded) return res.status(401).json({ code: 401, message: "未授权" });
-
+app.put("/api/supplies/:id", authenticate, authorize("管理员"), (req, res) => {
   const id = parseInt(req.params.id);
   const index = supplies.findIndex((s) => s.id === id);
   if (index === -1) return res.status(404).json({ code: 404, message: "农资不存在" });
@@ -370,10 +348,7 @@ app.put("/api/supplies/:id", (req, res) => {
   res.json({ code: 200, message: "更新成功", data: supplies[index] });
 });
 
-app.delete("/api/supplies/:id", (req, res) => {
-  const decoded = verifyToken(req);
-  if (!decoded) return res.status(401).json({ code: 401, message: "未授权" });
-
+app.delete("/api/supplies/:id", authenticate, authorize("管理员"), (req, res) => {
   const id = parseInt(req.params.id);
   const index = supplies.findIndex((s) => s.id === id);
   if (index === -1) return res.status(404).json({ code: 404, message: "农资不存在" });
@@ -382,12 +357,9 @@ app.delete("/api/supplies/:id", (req, res) => {
   res.json({ code: 200, message: "删除成功" });
 });
 
-// ==================== 用户管理 CRUD ====================
+// ==================== 用户管理 CRUD（仅管理员）====================
 
-app.get("/api/users", (req, res) => {
-  const decoded = verifyToken(req);
-  if (!decoded) return res.status(401).json({ code: 401, message: "未授权" });
-
+app.get("/api/users", authenticate, authorize("管理员"), (req, res) => {
   const { keyword, role, status } = req.query;
   let result = users.map(({ psw, ...rest }) => rest);
   if (keyword) result = result.filter((u) => u.username.includes(keyword));
@@ -396,38 +368,47 @@ app.get("/api/users", (req, res) => {
   res.json({ code: 200, data: result, total: result.length });
 });
 
-app.post("/api/users", (req, res) => {
-  const decoded = verifyToken(req);
-  if (!decoded) return res.status(401).json({ code: 401, message: "未授权" });
+app.post("/api/users", authenticate, authorize("管理员"), (req, res) => {
+  const { username, psw, role, phone } = req.body;
 
-  const { username } = req.body;
+  if (!username || !psw) {
+    return res.status(400).json({ code: 400, message: "用户名和密码不能为空" });
+  }
+
   if (users.find((u) => u.username === username)) {
     return res.status(400).json({ code: 400, message: "用户名已存在" });
   }
 
-  const user = { id: getNextId(), status: "启用", ...req.body };
+  const user = {
+    id: getNextId(),
+    username,
+    psw: hashPassword(psw),
+    role: role || "普通用户",
+    phone: phone || "",
+    status: "启用",
+  };
   users.push(user);
-  const { psw, ...rest } = user;
+
+  const { psw: _, ...rest } = user;
   res.json({ code: 200, message: "添加成功", data: rest });
 });
 
-app.put("/api/users/:id", (req, res) => {
-  const decoded = verifyToken(req);
-  if (!decoded) return res.status(401).json({ code: 401, message: "未授权" });
-
+app.put("/api/users/:id", authenticate, authorize("管理员"), (req, res) => {
   const id = parseInt(req.params.id);
   const index = users.findIndex((u) => u.id === id);
   if (index === -1) return res.status(404).json({ code: 404, message: "用户不存在" });
 
-  users[index] = { ...users[index], ...req.body };
-  const { psw, ...rest } = users[index];
+  const { psw, ...updates } = req.body;
+  if (psw) {
+    updates.psw = hashPassword(psw);
+  }
+  users[index] = { ...users[index], ...updates };
+
+  const { psw: _, ...rest } = users[index];
   res.json({ code: 200, message: "更新成功", data: rest });
 });
 
-app.delete("/api/users/:id", (req, res) => {
-  const decoded = verifyToken(req);
-  if (!decoded) return res.status(401).json({ code: 401, message: "未授权" });
-
+app.delete("/api/users/:id", authenticate, authorize("管理员"), (req, res) => {
   const id = parseInt(req.params.id);
   const index = users.findIndex((u) => u.id === id);
   if (index === -1) return res.status(404).json({ code: 404, message: "用户不存在" });

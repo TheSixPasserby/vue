@@ -1,11 +1,12 @@
 <script setup lang="ts">
-import { reactive, ref } from 'vue';
-import { adminLoginApi, getAdminInfoApi, userLoginApi } from '../../request/api';
-import Cookie from "js-cookie";
-import { useRouter } from 'vue-router';
-import { ElMessage } from 'element-plus';
-import { useMenusStore } from '../../store/menus';
-import { useUserStore } from '../../store/user';
+import { reactive, ref } from "vue";
+import { loginApi, getUserMenusApi } from "../../request/api";
+import Cookies from "js-cookie";
+import { useRouter } from "vue-router";
+import { ElMessage } from "element-plus";
+import { useMenusStore } from "../../store/menus";
+import { useUserStore } from "../../store/user";
+import { addDynamicRoutes } from "../../router";
 
 const router = useRouter();
 const menuStore = useMenusStore();
@@ -14,16 +15,12 @@ const loading = ref(false);
 
 const ruleForm = reactive({
   username: "",
-  psw: ""
+  psw: "",
 });
 
 const rules = {
-  username: [
-    { required: true, message: '请输入用户名', trigger: 'blur' },
-  ],
-  psw: [
-    { required: true, message: '请输入密码', trigger: 'blur' },
-  ],
+  username: [{ required: true, message: "请输入用户名", trigger: "blur" }],
+  psw: [{ required: true, message: "请输入密码", trigger: "blur" }],
 };
 
 const ruleFormRef = ref();
@@ -32,27 +29,34 @@ const loginFn = () => {
   ruleFormRef.value.validate().then(async () => {
     loading.value = true;
     try {
-      const isAdmin = ruleForm.username.startsWith("admin");
-      const loginApi = isAdmin ? adminLoginApi : userLoginApi;
-      const res = await loginApi({ username: ruleForm.username, psw: ruleForm.psw });
+      const res = await loginApi({
+        username: ruleForm.username,
+        psw: ruleForm.psw,
+      });
 
       if (res.code === 200) {
-        userStore.updateUerInfo({
-          username: ruleForm.username,
-          role: isAdmin ? "管理员" : "普通用户",
+        userStore.updateUserInfo({
+          username: res.user.username,
+          role: res.user.role,
         });
 
-        Cookie.set("token", res.token, { expires: 7 });
+        Cookies.set("token", res.token, { expires: 7 });
 
-        const menuRes = await getAdminInfoApi();
+        const menuRes = await getUserMenusApi();
         if (menuRes.code === 200) {
           menuStore.updateMenu(menuRes.menus);
+
+          const menuPaths = menuRes.menus.flatMap((m) =>
+            m.children?.map((c) => c.path) || []
+          );
+          addDynamicRoutes(menuPaths);
+
           ElMessage.success("登录成功");
-          router.push("/homepage");
+          router.push("/homepage/dashboard");
         }
       }
-    } catch (err: any) {
-      ElMessage.error(err?.response?.data?.error || "登录失败");
+    } catch {
+      // 错误已在拦截器中处理
     } finally {
       loading.value = false;
     }
@@ -72,19 +76,9 @@ const loginFn = () => {
           <p class="login-subtitle">Agriculture Data Analysis & Management System</p>
         </div>
 
-        <el-form
-          ref="ruleFormRef"
-          :model="ruleForm"
-          :rules="rules"
-          class="login-form"
-        >
+        <el-form ref="ruleFormRef" :model="ruleForm" :rules="rules" class="login-form">
           <el-form-item prop="username">
-            <el-input
-              v-model="ruleForm.username"
-              placeholder="请输入用户名"
-              size="large"
-              prefix-icon="User"
-            />
+            <el-input v-model="ruleForm.username" placeholder="请输入用户名" size="large" prefix-icon="User" />
           </el-form-item>
           <el-form-item prop="psw">
             <el-input
@@ -98,20 +92,14 @@ const loginFn = () => {
             />
           </el-form-item>
           <el-form-item>
-            <el-button
-              type="primary"
-              size="large"
-              :loading="loading"
-              class="login-btn"
-              @click="loginFn"
-            >
+            <el-button type="primary" size="large" :loading="loading" class="login-btn" @click="loginFn">
               登 录
             </el-button>
           </el-form-item>
         </el-form>
 
         <div class="login-footer">
-          <p class="test-accounts">测试账号：admin / 111111（管理员） &nbsp;|&nbsp; 张三 / 222222（普通用户）</p>
+          <p class="test-accounts">测试账号：admin / 111111（管理员） | 张三 / 222222（普通用户）</p>
         </div>
       </div>
     </div>
@@ -136,14 +124,13 @@ const loginFn = () => {
 }
 
 .login-bg::before {
-  content: '';
+  content: "";
   position: absolute;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
-  background-image:
-    radial-gradient(circle at 20% 80%, rgba(255, 255, 255, 0.1) 0%, transparent 50%),
+  background-image: radial-gradient(circle at 20% 80%, rgba(255, 255, 255, 0.1) 0%, transparent 50%),
     radial-gradient(circle at 80% 20%, rgba(255, 255, 255, 0.1) 0%, transparent 50%);
 }
 
@@ -194,15 +181,6 @@ const loginFn = () => {
 
 .login-form :deep(.el-input__wrapper) {
   border-radius: 8px;
-  box-shadow: 0 0 0 1px #dcdfe6 inset;
-}
-
-.login-form :deep(.el-input__wrapper:hover) {
-  box-shadow: 0 0 0 1px #c0c4cc inset;
-}
-
-.login-form :deep(.el-input__wrapper.is-focus) {
-  box-shadow: 0 0 0 1px #409eff inset;
 }
 
 .login-btn {

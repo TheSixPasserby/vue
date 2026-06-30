@@ -11,7 +11,10 @@ interface LoginData {
 interface LoginRes {
   code: number;
   message: string;
-  user: { username: string; role: string };
+  user: {
+    username: string;
+    role: string;
+  };
   token: string;
 }
 
@@ -96,18 +99,14 @@ interface ActionRes<T> {
   data?: T;
 }
 
-// ==================== 登录接口 ====================
+// ==================== 认证接口 ====================
 
-export const adminLoginApi = (data: LoginData): Promise<LoginRes> => {
-  return request.post("/api/admin/data", data);
+export const loginApi = (data: LoginData): Promise<LoginRes> => {
+  return request.post("/api/auth/login", data);
 };
 
-export const userLoginApi = (data: LoginData): Promise<LoginRes> => {
-  return request.post("/api/user/data", data);
-};
-
-export const getAdminInfoApi = (): Promise<MenuRes> => {
-  return request.get("/api/admin/info");
+export const getUserMenusApi = (): Promise<MenuRes> => {
+  return request.get("/api/user/menus");
 };
 
 // ==================== 仪表盘接口 ====================

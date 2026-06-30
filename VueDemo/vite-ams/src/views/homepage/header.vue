@@ -27,7 +27,7 @@ const handleLoginOut = () => {
     cancelButtonText: '取消',
     type: 'warning',
   }).then(() => {
-    userStore.loginout();
+    userStore.logout();
     router.push("/login");
   }).catch(() => {});
 };

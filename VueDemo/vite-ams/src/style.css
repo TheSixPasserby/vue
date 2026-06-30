@@ -6,10 +6,10 @@
 
 :root {
   /* M3 Expressive 核心圆角规范 */
-  --el-border-radius-base: 12px;
-  --el-border-radius-small: 8px;
-  --el-border-radius-large: 24px;
-  --el-border-radius-round: 32px;
+  --el-border-radius-base: 10px;
+  --el-border-radius-small: 6px;
+  --el-border-radius-large: 16px;
+  --el-border-radius-round: 24px;
 
   /* M3 丰盈色系 (Expressive Palette) */
   --el-color-primary: #6750A4;
@@ -80,8 +80,8 @@ html, body {
 
 /* M3 全局卡片样式覆盖 */
 .el-card {
-  border-radius: 24px !important;
-  border: 1px solid var(--m3-outline) !important;
+  border-radius: 16px !important;
+  border: 1px solid var(--m3-surface-container-high) !important;
   box-shadow: none !important;
   transition: box-shadow 0.2s ease, transform 0.2s ease !important;
 }
@@ -117,7 +117,7 @@ html, body {
 
 /* M3 全局弹窗样式覆盖 */
 .el-dialog {
-  border-radius: 28px !important;
+  border-radius: 20px !important;
   overflow: hidden;
 }
 
@@ -135,8 +135,9 @@ html, body {
 
 /* M3 全局表格样式覆盖 */
 .el-table {
-  border-radius: 16px !important;
+  border-radius: 12px !important;
   overflow: hidden;
+  border: 1px solid var(--m3-surface-container-high);
 }
 
 .el-table th.el-table__cell {

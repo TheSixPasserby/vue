@@ -1,15 +1,8 @@
 <script setup lang="ts">
-import { useMenusStore } from '../../store/menus';
-import { useRouter, useRoute } from 'vue-router';
-import { computed, markRaw } from 'vue';
-import {
-  DataLine,
-  Crop,
-  Sunny,
-  Box,
-  Setting,
-  Menu,
-} from '@element-plus/icons-vue';
+import { useMenusStore } from "../../store/menus";
+import { useRouter, useRoute } from "vue-router";
+import { computed, markRaw } from "vue";
+import { DataLine, Crop, Sunny, Box, Setting, Menu } from "@element-plus/icons-vue";
 
 const menuStore = useMenusStore();
 const router = useRouter();
@@ -31,13 +24,11 @@ const handleMenuClick = (path: string) => {
 </script>
 
 <template>
-  <el-scrollbar>
+  <el-scrollbar class="m3-sidebar-scroll">
     <el-menu
       :default-active="defaultActive"
-      active-text-color="#409eff"
-      background-color="#304156"
-      text-color="#bfcbd9"
       :unique-opened="true"
+      class="m3-sidebar-menu"
     >
       <el-sub-menu
         v-for="menu in menuStore.homepageMenu"
@@ -45,11 +36,10 @@ const handleMenuClick = (path: string) => {
         :index="menu.id.toString()"
       >
         <template #title>
-          <el-icon>
-            <component :is="menuIcons[menu.id] || Menu" />
-          </el-icon>
-          <span>{{ menu.title }}</span>
+          <el-icon><component :is="menuIcons[menu.id] || Menu" /></el-icon>
+          <span class="m3-menu-title">{{ menu.title }}</span>
         </template>
+
         <el-menu-item
           v-for="submenu in menu.children"
           :key="submenu.id"
@@ -64,23 +54,49 @@ const handleMenuClick = (path: string) => {
 </template>
 
 <style scoped>
-.el-scrollbar {
-  height: calc(100vh - 64px - 50px);
+.m3-sidebar-scroll {
+  height: calc(100vh - 64px);
+  background-color: var(--m3-surface);
 }
 
-.el-menu {
+.m3-sidebar-menu {
   border-right: none;
+  background-color: transparent;
+  padding: 12px;
 }
 
-.el-menu-item.is-active {
-  background-color: #263445 !important;
+.m3-menu-title {
+  font-weight: 600;
 }
 
-.el-menu-item:hover {
-  background-color: #263445 !important;
+:deep(.el-sub-menu__title) {
+  border-radius: 12px !important;
+  color: var(--m3-on-surface-variant) !important;
+  height: 48px !important;
+  line-height: 48px !important;
 }
 
 :deep(.el-sub-menu__title:hover) {
-  background-color: #263445 !important;
+  background-color: var(--m3-surface-container-high) !important;
+}
+
+:deep(.el-menu-item) {
+  border-radius: 100px !important;
+  margin-bottom: 4px;
+  height: 44px !important;
+  line-height: 44px !important;
+  color: var(--m3-on-surface-variant) !important;
+  transition: all 0.2s ease;
+  padding-left: 52px !important;
+}
+
+:deep(.el-menu-item:hover) {
+  background-color: var(--m3-surface-container-high) !important;
+}
+
+:deep(.el-menu-item.is-active) {
+  background-color: var(--el-color-primary-light-8) !important;
+  color: var(--el-color-primary-dark-2) !important;
+  font-weight: 600;
 }
 </style>

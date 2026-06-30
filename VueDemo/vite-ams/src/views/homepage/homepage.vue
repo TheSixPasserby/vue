@@ -1,72 +1,75 @@
 <script setup lang="ts">
 import Menu from "./menu.vue";
 import Header from "./header.vue";
-import { Promotion } from "@element-plus/icons-vue";
 </script>
 
 <template>
-  <div class="homepage_container">
-    <div class="homepage_header">
+  <div class="m3-homepage">
+    <div class="m3-header">
       <Header />
     </div>
-    <div class="homepage_body">
-      <div class="homepage_menu">
-        <div class="menu-logo">
-          <el-icon size="24" color="#409eff"><Promotion /></el-icon>
-          <span>功能导航</span>
+    <div class="m3-body">
+      <div class="m3-sidebar">
+        <div class="sidebar-header">
+          <span class="sidebar-title">功能导航</span>
         </div>
         <Menu />
       </div>
-      <div class="homepage_content">
+      <div class="m3-content">
         <router-view />
       </div>
     </div>
   </div>
 </template>
 
-<style scoped lang="css">
-.homepage_container {
+<style scoped>
+.m3-homepage {
   display: flex;
   flex-direction: column;
   height: 100vh;
   overflow: hidden;
 }
 
-.homepage_header {
+.m3-header {
   height: 64px;
   flex-shrink: 0;
+  z-index: 10;
 }
 
-.homepage_body {
+.m3-body {
   display: flex;
   flex: 1;
   overflow: hidden;
 }
 
-.homepage_menu {
+.m3-sidebar {
   width: 240px;
-  background-color: #304156;
+  background-color: var(--m3-surface-container);
   display: flex;
   flex-direction: column;
   flex-shrink: 0;
   overflow: hidden;
+  border-right: 1px solid var(--m3-outline);
 }
 
-.menu-logo {
-  height: 50px;
+.sidebar-header {
+  height: 52px;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
-  color: #bfcbd9;
-  font-size: 14px;
-  font-weight: 600;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  border-bottom: 1px solid var(--m3-outline);
 }
 
-.homepage_content {
+.sidebar-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--m3-on-surface-variant);
+  letter-spacing: 0.5px;
+}
+
+.m3-content {
   flex: 1;
-  background-color: #f0f2f5;
+  background-color: var(--m3-surface);
   overflow-y: auto;
   overflow-x: hidden;
 }

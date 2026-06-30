@@ -4,10 +4,58 @@
   box-sizing: border-box;
 }
 
+:root {
+  /* M3 Expressive 核心圆角规范 */
+  --el-border-radius-base: 12px;
+  --el-border-radius-small: 8px;
+  --el-border-radius-large: 24px;
+  --el-border-radius-round: 32px;
+
+  /* M3 丰盈色系 (Expressive Palette) */
+  --el-color-primary: #6750A4;
+  --el-color-primary-light-3: #9A82DB;
+  --el-color-primary-light-5: #B69DF8;
+  --el-color-primary-light-7: #D0BCFF;
+  --el-color-primary-light-8: #EADDFF;
+  --el-color-primary-light-9: #F6EDFF;
+  --el-color-primary-dark-2: #4F378B;
+
+  /* 农业系统专属 M3 森林绿 */
+  --el-color-success: #386A20;
+  --el-color-success-light-3: #6AAE50;
+  --el-color-success-light-5: #8BC878;
+  --el-color-success-light-9: #E8F5E0;
+
+  /* M3 温暖橙色 */
+  --el-color-warning: #8B5000;
+  --el-color-warning-light-3: #C77D28;
+  --el-color-warning-light-9: #FFF3E0;
+
+  /* M3 错误红 */
+  --el-color-danger: #BA1A1A;
+  --el-color-danger-light-3: #DE3730;
+  --el-color-danger-light-9: #FFDAD6;
+
+  /* M3 阴影 - 更扁平、更柔和 */
+  --el-box-shadow-light: 0px 1px 3px 1px rgba(0, 0, 0, 0.15), 0px 1px 2px 0px rgba(0, 0, 0, 0.30);
+  --el-box-shadow: 0px 2px 6px 2px rgba(0, 0, 0, 0.15), 0px 1px 2px 0px rgba(0, 0, 0, 0.30);
+  --el-box-shadow-dark: 0px 4px 8px 3px rgba(0, 0, 0, 0.15), 0px 1px 3px 0px rgba(0, 0, 0, 0.30);
+
+  /* M3 Surface 色 */
+  --m3-surface: #FEF7FF;
+  --m3-surface-container: #F3EDF7;
+  --m3-surface-container-high: #ECE6F0;
+  --m3-on-surface: #1D1B20;
+  --m3-on-surface-variant: #49454F;
+  --m3-outline: #CAC4D0;
+  --m3-outline-variant: #79747E;
+}
+
 html, body {
   width: 100%;
   height: 100%;
-  font-family: 'Helvetica Neue', Helvetica, 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', Arial, sans-serif;
+  font-family: 'Roboto', 'Noto Sans SC', 'Helvetica Neue', Helvetica, 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', Arial, sans-serif;
+  background-color: var(--m3-surface);
 }
 
 #app {
@@ -15,16 +63,119 @@ html, body {
   height: 100%;
 }
 
+/* M3 全局滚动条美化 */
 ::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+  width: 8px;
+  height: 8px;
 }
 
 ::-webkit-scrollbar-thumb {
-  background-color: #dcdfe6;
-  border-radius: 3px;
+  background-color: var(--m3-outline);
+  border-radius: 4px;
 }
 
 ::-webkit-scrollbar-track {
-  background-color: #f5f7fa;
+  background-color: var(--m3-surface-container);
+}
+
+/* M3 全局卡片样式覆盖 */
+.el-card {
+  border-radius: 24px !important;
+  border: 1px solid var(--m3-outline) !important;
+  box-shadow: none !important;
+  transition: box-shadow 0.2s ease, transform 0.2s ease !important;
+}
+
+.el-card:hover {
+  box-shadow: var(--el-box-shadow-light) !important;
+}
+
+/* M3 全局按钮样式覆盖 */
+.el-button {
+  border-radius: 20px !important;
+  font-weight: 500 !important;
+  letter-spacing: 0.1px !important;
+}
+
+.el-button--primary {
+  background-color: var(--el-color-primary) !important;
+  border-color: var(--el-color-primary) !important;
+}
+
+.el-button--primary:hover {
+  background-color: var(--el-color-primary-dark-2) !important;
+}
+
+/* M3 全局输入框样式覆盖 */
+.el-input__wrapper {
+  border-radius: 12px !important;
+}
+
+.el-select .el-input__wrapper {
+  border-radius: 12px !important;
+}
+
+/* M3 全局弹窗样式覆盖 */
+.el-dialog {
+  border-radius: 28px !important;
+  overflow: hidden;
+}
+
+.el-dialog__header {
+  padding: 24px 24px 16px !important;
+}
+
+.el-dialog__body {
+  padding: 16px 24px !important;
+}
+
+.el-dialog__footer {
+  padding: 16px 24px 24px !important;
+}
+
+/* M3 全局表格样式覆盖 */
+.el-table {
+  border-radius: 16px !important;
+  overflow: hidden;
+}
+
+.el-table th.el-table__cell {
+  background-color: var(--m3-surface-container) !important;
+  color: var(--m3-on-surface) !important;
+  font-weight: 600 !important;
+}
+
+.el-table td.el-table__cell {
+  border-bottom-color: var(--m3-surface-container-high) !important;
+}
+
+/* M3 全局标签样式覆盖 */
+.el-tag {
+  border-radius: 8px !important;
+}
+
+/* M3 全局下拉菜单样式覆盖 */
+.el-dropdown-menu {
+  padding: 8px !important;
+  border-radius: 16px !important;
+  border: 1px solid var(--m3-outline) !important;
+  box-shadow: var(--el-box-shadow) !important;
+}
+
+.el-dropdown-menu__item {
+  padding: 10px 16px !important;
+  border-radius: 8px !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 12px !important;
+}
+
+/* M3 NProgress 进度条 */
+#nprogress .bar {
+  background: var(--el-color-primary) !important;
+  height: 3px !important;
+}
+
+#nprogress .peg {
+  box-shadow: 0 0 10px var(--el-color-primary), 0 0 5px var(--el-color-primary) !important;
 }

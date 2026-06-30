@@ -6,10 +6,13 @@ import { getWeatherApi, addWeatherApi, updateWeatherApi, deleteWeatherApi, type 
 
 const tableData = ref<WeatherItem[]>([]);
 const loading = ref(false);
+const submitLoading = ref(false);
 const dialogVisible = ref(false);
 const isEdit = ref(false);
 const chartRef = ref<HTMLElement>();
 let chart: echarts.ECharts;
+
+const m3Colors = ["#8B5000", "#6750A4", "#49454F", "#386A20"];
 
 const formData = ref<Partial<WeatherItem>>({});
 const formRules = {
@@ -20,12 +23,15 @@ const formRules = {
 
 const loadData = async () => {
   loading.value = true;
-  const res = await getWeatherApi();
-  if (res.code === 200) {
-    tableData.value = res.data;
-    renderChart(res.data);
+  try {
+    const res = await getWeatherApi();
+    if (res.code === 200) {
+      tableData.value = res.data;
+      renderChart(res.data);
+    }
+  } finally {
+    loading.value = false;
   }
-  loading.value = false;
 };
 
 const renderChart = (data: WeatherItem[]) => {
@@ -33,19 +39,102 @@ const renderChart = (data: WeatherItem[]) => {
   if (!chart) chart = echarts.init(chartRef.value);
   const sorted = [...data].sort((a, b) => a.date.localeCompare(b.date));
   chart.setOption({
-    title: { text: "气象数据趋势", left: "center" },
-    tooltip: { trigger: "axis" },
-    legend: { top: 30 },
-    xAxis: { type: "category", data: sorted.map((d) => d.date) },
+    color: m3Colors,
+    title: {
+      text: "气象数据趋势",
+      left: "center",
+      textStyle: { color: "#1D1B20", fontWeight: 600 },
+    },
+    tooltip: {
+      trigger: "axis",
+      backgroundColor: "#ffffff",
+      borderColor: "#CAC4D0",
+      textStyle: { color: "#1D1B20" },
+    },
+    legend: {
+      top: 36,
+      textStyle: { color: "#49454F" },
+    },
+    grid: {
+      top: "20%",
+      left: "3%",
+      right: "4%",
+      bottom: "5%",
+      containLabel: true,
+    },
+    xAxis: {
+      type: "category",
+      data: sorted.map((d) => d.date),
+      axisLabel: { color: "#49454F" },
+      axisLine: { lineStyle: { color: "#CAC4D0" } },
+    },
     yAxis: [
-      { type: "value", name: "温度(°C)/湿度(%)", position: "left" },
-      { type: "value", name: "降雨量(mm)/风速(m/s)", position: "right" },
+      {
+        type: "value",
+        name: "温度(°C)/湿度(%)",
+        position: "left",
+        axisLabel: { color: "#49454F" },
+        splitLine: { lineStyle: { color: "#ECE6F0" } },
+      },
+      {
+        type: "value",
+        name: "降雨量(mm)/风速(m/s)",
+        position: "right",
+        axisLabel: { color: "#49454F" },
+        splitLine: { show: false },
+      },
     ],
     series: [
-      { name: "温度(°C)", type: "line", smooth: true, data: sorted.map((d) => d.temperature), itemStyle: { color: "#e6a23c" } },
-      { name: "湿度(%)", type: "line", smooth: true, data: sorted.map((d) => d.humidity), itemStyle: { color: "#409eff" } },
-      { name: "降雨量(mm)", type: "bar", yAxisIndex: 1, data: sorted.map((d) => d.rainfall), itemStyle: { color: "#909399" } },
-      { name: "风速(m/s)", type: "line", smooth: true, yAxisIndex: 1, data: sorted.map((d) => d.windSpeed), itemStyle: { color: "#f56c6c" } },
+      {
+        name: "温度(°C)",
+        type: "line",
+        smooth: true,
+        data: sorted.map((d) => d.temperature),
+        lineStyle: { width: 3 },
+        itemStyle: { color: "#8B5000" },
+        areaStyle: {
+          color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+            { offset: 0, color: "rgba(139, 80, 0, 0.2)" },
+            { offset: 1, color: "rgba(139, 80, 0, 0.02)" },
+          ]),
+        },
+      },
+      {
+        name: "湿度(%)",
+        type: "line",
+        smooth: true,
+        data: sorted.map((d) => d.humidity),
+        lineStyle: { width: 3 },
+        itemStyle: { color: "#6750A4" },
+        areaStyle: {
+          color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+            { offset: 0, color: "rgba(103, 80, 164, 0.2)" },
+            { offset: 1, color: "rgba(103, 80, 164, 0.02)" },
+          ]),
+        },
+      },
+      {
+        name: "降雨量(mm)",
+        type: "bar",
+        yAxisIndex: 1,
+        data: sorted.map((d) => d.rainfall),
+        itemStyle: {
+          borderRadius: [6, 6, 0, 0],
+          color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+            { offset: 0, color: "#49454F" },
+            { offset: 1, color: "#79747E" },
+          ]),
+        },
+      },
+      {
+        name: "风速(m/s)",
+        type: "line",
+        smooth: true,
+        yAxisIndex: 1,
+        data: sorted.map((d) => d.windSpeed),
+        lineStyle: { width: 3 },
+        itemStyle: { color: "#386A20" },
+      },
     ],
   });
 };
@@ -72,20 +161,25 @@ const handleDelete = async (row: WeatherItem) => {
 };
 
 const handleSubmit = async () => {
-  if (isEdit.value && formData.value.id) {
-    const res = await updateWeatherApi(formData.value.id, formData.value);
-    if (res.code === 200) {
-      ElMessage.success("更新成功");
-      dialogVisible.value = false;
-      loadData();
+  submitLoading.value = true;
+  try {
+    if (isEdit.value && formData.value.id) {
+      const res = await updateWeatherApi(formData.value.id, formData.value);
+      if (res.code === 200) {
+        ElMessage.success("更新成功");
+        dialogVisible.value = false;
+        loadData();
+      }
+    } else {
+      const res = await addWeatherApi(formData.value);
+      if (res.code === 200) {
+        ElMessage.success("添加成功");
+        dialogVisible.value = false;
+        loadData();
+      }
     }
-  } else {
-    const res = await addWeatherApi(formData.value);
-    if (res.code === 200) {
-      ElMessage.success("添加成功");
-      dialogVisible.value = false;
-      loadData();
-    }
+  } finally {
+    submitLoading.value = false;
   }
 };
 
@@ -103,27 +197,29 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <div class="page-container">
-    <el-card class="chart-card">
+  <div class="m3-page">
+    <el-card shadow="never" class="m3-card chart-card">
       <div ref="chartRef" class="chart-container"></div>
     </el-card>
 
-    <el-card>
+    <el-card shadow="never" class="m3-card">
       <template #header>
         <div class="card-header">
-          <span>气象数据</span>
+          <span class="card-title">气象数据</span>
           <el-button type="success" @click="handleAdd">新增记录</el-button>
         </div>
       </template>
 
-      <el-table :data="tableData" v-loading="loading" stripe border style="width: 100%">
+      <el-table :data="tableData" v-loading="loading" stripe style="width: 100%">
         <el-table-column prop="id" label="ID" width="70" />
         <el-table-column prop="date" label="日期" width="120" />
         <el-table-column prop="temperature" label="温度(°C)" width="100" />
         <el-table-column prop="humidity" label="湿度(%)" width="100" />
         <el-table-column prop="rainfall" label="降雨量(mm)" width="110" />
         <el-table-column prop="windSpeed" label="风速(m/s)" width="100" />
-        <el-table-column prop="location" label="监测区域" width="100" />
+        <el-table-column prop="location" label="监测区域" min-width="100">
+          <template #default="{ row }">{{ row.location || "-" }}</template>
+        </el-table-column>
         <el-table-column label="操作" width="160" fixed="right">
           <template #default="{ row }">
             <el-button type="primary" link @click="handleEdit(row)">编辑</el-button>
@@ -133,7 +229,7 @@ onUnmounted(() => {
       </el-table>
     </el-card>
 
-    <el-dialog :title="isEdit ? '编辑气象数据' : '新增气象数据'" v-model="dialogVisible" width="500px">
+    <el-dialog :title="isEdit ? '编辑气象数据' : '新增气象数据'" v-model="dialogVisible" width="500px" destroy-on-close>
       <el-form :model="formData" :rules="formRules" label-width="100px">
         <el-form-item label="日期" prop="date">
           <el-date-picker v-model="formData.date" type="date" value-format="YYYY-MM-DD" style="width: 100%" />
@@ -156,18 +252,20 @@ onUnmounted(() => {
       </el-form>
       <template #footer>
         <el-button @click="dialogVisible = false">取消</el-button>
-        <el-button type="primary" @click="handleSubmit">确定</el-button>
+        <el-button type="primary" :loading="submitLoading" @click="handleSubmit">确定</el-button>
       </template>
     </el-dialog>
   </div>
 </template>
 
-<style scoped lang="css">
-.page-container {
-  padding: 20px;
+<style scoped>
+.m3-page {
+  padding: 24px;
+  background-color: var(--m3-surface);
+  min-height: calc(100vh - 64px);
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 24px;
 }
 
 .chart-card {
@@ -182,5 +280,13 @@ onUnmounted(() => {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.card-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--m3-on-surface);
 }
 </style>

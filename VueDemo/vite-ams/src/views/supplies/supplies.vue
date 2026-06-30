@@ -87,11 +87,11 @@ onMounted(loadData);
 </script>
 
 <template>
-  <div class="page-container">
-    <el-card>
+  <div class="m3-page">
+    <el-card shadow="never" class="m3-card">
       <template #header>
         <div class="card-header">
-          <span>农资管理</span>
+          <span class="card-title">农资管理</span>
           <div class="search-bar">
             <el-input v-model="searchKeyword" placeholder="搜索农资名称" clearable style="width: 180px" @clear="loadData" />
             <el-select v-model="searchType" placeholder="农资类型" clearable style="width: 140px" @change="loadData">
@@ -103,13 +103,13 @@ onMounted(loadData);
         </div>
       </template>
 
-      <el-table :data="tableData" v-loading="loading" stripe border style="width: 100%">
+      <el-table :data="tableData" v-loading="loading" stripe style="width: 100%">
         <el-table-column prop="id" label="ID" width="70" />
         <el-table-column prop="name" label="农资名称" width="120" show-overflow-tooltip />
         <el-table-column prop="type" label="类型" width="80" />
         <el-table-column prop="stock" label="库存量" width="120">
           <template #default="{ row }">
-            <el-tag :type="getStockStatus(row.stock)">
+            <el-tag :type="getStockStatus(row.stock)" effect="light">
               {{ row.stock }} {{ row.unit }}
             </el-tag>
           </template>
@@ -161,9 +161,11 @@ onMounted(loadData);
   </div>
 </template>
 
-<style scoped lang="css">
-.page-container {
-  padding: 20px;
+<style scoped>
+.m3-page {
+  padding: 24px;
+  background-color: var(--m3-surface);
+  min-height: calc(100vh - 64px);
 }
 
 .card-header {
@@ -171,12 +173,18 @@ onMounted(loadData);
   justify-content: space-between;
   align-items: center;
   flex-wrap: wrap;
-  gap: 10px;
+  gap: 16px;
+}
+
+.card-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--m3-on-surface);
 }
 
 .search-bar {
   display: flex;
-  gap: 10px;
+  gap: 12px;
   flex-wrap: wrap;
 }
 </style>

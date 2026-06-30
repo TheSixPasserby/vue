@@ -2,7 +2,7 @@
 import { ref, onMounted, onUnmounted } from "vue";
 import { useRouter } from "vue-router";
 import { useUserStore } from "../../store/user";
-import { Promotion, SwitchButton, User } from "@element-plus/icons-vue";
+import { Promotion, SwitchButton, User, ArrowDown } from "@element-plus/icons-vue";
 
 const router = useRouter();
 const userStore = useUserStore();
@@ -36,36 +36,38 @@ const handleCommand = (command: string) => {
 </script>
 
 <template>
-  <div class="header_container">
-    <div class="header_left">
-      <el-icon size="22" color="#fff"><Promotion /></el-icon>
-      <h1 class="system_title">农业数据分析和管理系统</h1>
+  <div class="m3-header">
+    <div class="header-left">
+      <el-icon size="24" color="var(--el-color-primary)"><Promotion /></el-icon>
+      <h1 class="system-title">农业数据分析和管理系统</h1>
     </div>
 
-    <div class="header_right">
-      <div class="header_time">
+    <div class="header-right">
+      <div class="time-display">
         <div class="time">{{ currentTime }}</div>
         <div class="date">{{ currentDate }}</div>
       </div>
+
       <el-divider direction="vertical" />
-      <el-dropdown @command="handleCommand" trigger="click">
-        <div class="user_dropdown">
-          <el-avatar :size="32" style="background-color: #409eff">
+
+      <el-dropdown @command="handleCommand" trigger="click" popper-class="m3-dropdown-popper">
+        <div class="m3-user-profile">
+          <el-avatar :size="36" style="background-color: var(--el-color-primary)">
             {{ userStore.user?.username?.charAt(0) }}
           </el-avatar>
-          <div class="user_detail">
-            <span class="user_name">{{ userStore.user?.username }}</span>
-            <span class="user_role">{{ userStore.user?.role }}</span>
+          <div class="user-info">
+            <span class="username">{{ userStore.user?.username }}</span>
+            <span class="role">{{ userStore.user?.role }}</span>
           </div>
-          <el-icon class="dropdown_arrow"><ArrowDown /></el-icon>
+          <el-icon class="arrow-icon"><ArrowDown /></el-icon>
         </div>
         <template #dropdown>
           <el-dropdown-menu>
             <el-dropdown-item :icon="User" disabled>
-              {{ userStore.user?.role }}
+              <span>{{ userStore.user?.role }}</span>
             </el-dropdown-item>
             <el-dropdown-item :icon="SwitchButton" command="logout" divided>
-              退出登录
+              <span>退出登录</span>
             </el-dropdown-item>
           </el-dropdown-menu>
         </template>
@@ -74,100 +76,97 @@ const handleCommand = (command: string) => {
   </div>
 </template>
 
-<style scoped lang="css">
-.header_container {
+<style scoped>
+.m3-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
   width: 100%;
   height: 64px;
-  padding: 0 20px;
-  background: linear-gradient(90deg, #304156 0%, #3a4f65 100%);
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.12);
+  padding: 0 24px;
+  background-color: #ffffff;
+  border-bottom: 1px solid var(--m3-outline);
 }
 
-.header_left {
+.header-left {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
 }
 
-.system_title {
+.system-title {
   margin: 0;
   font-size: 20px;
   font-weight: 600;
-  color: #ffffff;
+  color: var(--m3-on-surface);
   white-space: nowrap;
 }
 
-.header_right {
+.header-right {
   display: flex;
   align-items: center;
   gap: 16px;
 }
 
-.header_time {
+.time-display {
   text-align: right;
 }
 
-.header_time .time {
+.time-display .time {
   font-size: 18px;
   font-weight: 600;
-  color: #ffffff;
+  color: var(--m3-on-surface);
   line-height: 1.2;
 }
 
-.header_time .date {
+.time-display .date {
   font-size: 12px;
-  color: #bfcbd9;
+  color: var(--m3-on-surface-variant);
 }
 
 .el-divider {
-  border-color: rgba(255, 255, 255, 0.2);
-  height: 30px;
+  border-color: var(--m3-outline);
+  height: 32px;
 }
 
-.user_dropdown {
+.m3-user-profile {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
+  padding: 6px 16px 6px 8px;
+  border-radius: 20px;
+  transition: all 0.2s ease;
   cursor: pointer;
-  padding: 4px 8px;
-  border-radius: 6px;
-  transition: background-color 0.2s;
 }
 
-.user_dropdown:hover {
-  background-color: rgba(255, 255, 255, 0.1);
+.m3-user-profile:hover {
+  background-color: var(--el-color-primary-light-9);
 }
 
-.user_detail {
+.user-info {
   display: flex;
   flex-direction: column;
 }
 
-.user_name {
+.username {
   font-size: 14px;
   font-weight: 500;
-  color: #ffffff;
+  color: var(--m3-on-surface);
   line-height: 1.2;
 }
 
-.user_role {
+.role {
   font-size: 12px;
-  color: #bfcbd9;
+  color: var(--m3-on-surface-variant);
 }
 
-.dropdown_arrow {
-  color: #bfcbd9;
+.arrow-icon {
   font-size: 12px;
-  transition: transform 0.2s;
+  color: var(--m3-on-surface-variant);
+  transition: transform 0.2s ease;
 }
 
-:deep(.el-dropdown-menu__item) {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 8px 16px;
+.m3-user-profile:hover .arrow-icon {
+  transform: rotate(180deg);
 }
 </style>

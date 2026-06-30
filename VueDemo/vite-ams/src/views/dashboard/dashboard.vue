@@ -18,6 +18,15 @@ const lineChartRef = ref<HTMLElement>();
 let barChart: echarts.ECharts;
 let lineChart: echarts.ECharts;
 
+const m3Colors = [
+  "#6750A4",
+  "#386A20",
+  "#8B5000",
+  "#BA1A1A",
+  "#006A6A",
+  "#7D5260",
+];
+
 const loadData = async () => {
   const res = await getDashboardStatsApi();
   if (res.code === 200) {
@@ -31,17 +40,82 @@ const renderBarChart = (data: { name: string; yield: number; area: number }[]) =
   if (!barChartRef.value) return;
   barChart = echarts.init(barChartRef.value);
   barChart.setOption({
-    title: { text: "作物产量与种植面积", left: "center" },
-    tooltip: { trigger: "axis" },
-    legend: { top: 30 },
-    xAxis: { type: "category", data: data.map((d) => d.name) },
+    color: m3Colors,
+    title: {
+      text: "作物产量与种植面积",
+      left: "center",
+      textStyle: {
+        color: "#1D1B20",
+        fontWeight: 600,
+      },
+    },
+    tooltip: {
+      trigger: "axis",
+      backgroundColor: "#ffffff",
+      borderColor: "#CAC4D0",
+      textStyle: { color: "#1D1B20" },
+    },
+    legend: {
+      top: 36,
+      textStyle: { color: "#49454F" },
+    },
+    grid: {
+      top: "20%",
+      left: "3%",
+      right: "4%",
+      bottom: "5%",
+      containLabel: true,
+    },
+    xAxis: {
+      type: "category",
+      data: data.map((d) => d.name),
+      axisLabel: { color: "#49454F" },
+      axisLine: { lineStyle: { color: "#CAC4D0" } },
+    },
     yAxis: [
-      { type: "value", name: "产量(kg)", position: "left" },
-      { type: "value", name: "面积(亩)", position: "right" },
+      {
+        type: "value",
+        name: "产量(kg)",
+        position: "left",
+        axisLabel: { color: "#49454F" },
+        splitLine: { lineStyle: { color: "#ECE6F0" } },
+      },
+      {
+        type: "value",
+        name: "面积(亩)",
+        position: "right",
+        axisLabel: { color: "#49454F" },
+        splitLine: { show: false },
+      },
     ],
     series: [
-      { name: "产量(kg)", type: "bar", data: data.map((d) => d.yield), itemStyle: { color: "#409eff" } },
-      { name: "种植面积(亩)", type: "bar", yAxisIndex: 1, data: data.map((d) => d.area), itemStyle: { color: "#67c23a" } },
+      {
+        name: "产量(kg)",
+        type: "bar",
+        data: data.map((d) => d.yield),
+        itemStyle: {
+          borderRadius: [8, 8, 0, 0],
+          color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+            { offset: 0, color: "#6750A4" },
+            { offset: 1, color: "#9A82DB" },
+          ]),
+        },
+        barWidth: "30%",
+      },
+      {
+        name: "种植面积(亩)",
+        type: "bar",
+        yAxisIndex: 1,
+        data: data.map((d) => d.area),
+        itemStyle: {
+          borderRadius: [8, 8, 0, 0],
+          color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+            { offset: 0, color: "#386A20" },
+            { offset: 1, color: "#6AAE50" },
+          ]),
+        },
+        barWidth: "30%",
+      },
     ],
   });
 };
@@ -50,18 +124,92 @@ const renderLineChart = (data: { date: string; temperature: number; humidity: nu
   if (!lineChartRef.value) return;
   lineChart = echarts.init(lineChartRef.value);
   lineChart.setOption({
-    title: { text: "近7天气象趋势", left: "center" },
-    tooltip: { trigger: "axis" },
-    legend: { top: 30 },
-    xAxis: { type: "category", data: data.map((d) => d.date) },
+    color: ["#8B5000", "#6750A4", "#49454F"],
+    title: {
+      text: "近7天气象趋势",
+      left: "center",
+      textStyle: {
+        color: "#1D1B20",
+        fontWeight: 600,
+      },
+    },
+    tooltip: {
+      trigger: "axis",
+      backgroundColor: "#ffffff",
+      borderColor: "#CAC4D0",
+      textStyle: { color: "#1D1B20" },
+    },
+    legend: {
+      top: 36,
+      textStyle: { color: "#49454F" },
+    },
+    grid: {
+      top: "20%",
+      left: "3%",
+      right: "4%",
+      bottom: "5%",
+      containLabel: true,
+    },
+    xAxis: {
+      type: "category",
+      data: data.map((d) => d.date),
+      axisLabel: { color: "#49454F" },
+      axisLine: { lineStyle: { color: "#CAC4D0" } },
+    },
     yAxis: [
-      { type: "value", name: "温度(°C)/湿度(%)", position: "left" },
-      { type: "value", name: "降雨量(mm)", position: "right" },
+      {
+        type: "value",
+        name: "温度(°C)/湿度(%)",
+        position: "left",
+        axisLabel: { color: "#49454F" },
+        splitLine: { lineStyle: { color: "#ECE6F0" } },
+      },
+      {
+        type: "value",
+        name: "降雨量(mm)",
+        position: "right",
+        axisLabel: { color: "#49454F" },
+        splitLine: { show: false },
+      },
     ],
     series: [
-      { name: "温度(°C)", type: "line", smooth: true, data: data.map((d) => d.temperature), itemStyle: { color: "#e6a23c" } },
-      { name: "湿度(%)", type: "line", smooth: true, data: data.map((d) => d.humidity), itemStyle: { color: "#409eff" } },
-      { name: "降雨量(mm)", type: "line", smooth: true, yAxisIndex: 1, data: data.map((d) => d.rainfall), itemStyle: { color: "#909399" } },
+      {
+        name: "温度(°C)",
+        type: "line",
+        smooth: true,
+        data: data.map((d) => d.temperature),
+        lineStyle: { width: 3 },
+        itemStyle: { color: "#8B5000" },
+        areaStyle: {
+          color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+            { offset: 0, color: "rgba(139, 80, 0, 0.3)" },
+            { offset: 1, color: "rgba(139, 80, 0, 0.02)" },
+          ]),
+        },
+      },
+      {
+        name: "湿度(%)",
+        type: "line",
+        smooth: true,
+        data: data.map((d) => d.humidity),
+        lineStyle: { width: 3 },
+        itemStyle: { color: "#6750A4" },
+        areaStyle: {
+          color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+            { offset: 0, color: "rgba(103, 80, 164, 0.3)" },
+            { offset: 1, color: "rgba(103, 80, 164, 0.02)" },
+          ]),
+        },
+      },
+      {
+        name: "降雨量(mm)",
+        type: "line",
+        smooth: true,
+        yAxisIndex: 1,
+        data: data.map((d) => d.rainfall),
+        lineStyle: { width: 3 },
+        itemStyle: { color: "#49454F" },
+      },
     ],
   });
 };
@@ -84,13 +232,13 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <div class="dashboard">
-    <el-row :gutter="16" class="stat-cards">
+  <div class="m3-dashboard">
+    <el-row :gutter="24" class="stat-row">
       <el-col :xs="24" :sm="12" :lg="6">
-        <el-card shadow="hover" class="stat-card">
+        <el-card shadow="never" class="m3-card stat-card">
           <div class="stat-item">
-            <div class="stat-icon" style="background: #409eff">
-              <el-icon size="28"><TrendCharts /></el-icon>
+            <div class="stat-icon" style="background: linear-gradient(135deg, #6750A4, #9A82DB)">
+              <el-icon size="28" color="#fff"><TrendCharts /></el-icon>
             </div>
             <div class="stat-info">
               <div class="stat-value">{{ stats.totalCrops }}</div>
@@ -100,10 +248,10 @@ onUnmounted(() => {
         </el-card>
       </el-col>
       <el-col :xs="24" :sm="12" :lg="6">
-        <el-card shadow="hover" class="stat-card">
+        <el-card shadow="never" class="m3-card stat-card">
           <div class="stat-item">
-            <div class="stat-icon" style="background: #67c23a">
-              <el-icon size="28"><Grid /></el-icon>
+            <div class="stat-icon" style="background: linear-gradient(135deg, #386A20, #6AAE50)">
+              <el-icon size="28" color="#fff"><Grid /></el-icon>
             </div>
             <div class="stat-info">
               <div class="stat-value">{{ stats.totalArea }} <span class="unit">亩</span></div>
@@ -113,10 +261,10 @@ onUnmounted(() => {
         </el-card>
       </el-col>
       <el-col :xs="24" :sm="12" :lg="6">
-        <el-card shadow="hover" class="stat-card">
+        <el-card shadow="never" class="m3-card stat-card">
           <div class="stat-item">
-            <div class="stat-icon" style="background: #e6a23c">
-              <el-icon size="28"><Box /></el-icon>
+            <div class="stat-icon" style="background: linear-gradient(135deg, #8B5000, #C77D28)">
+              <el-icon size="28" color="#fff"><Box /></el-icon>
             </div>
             <div class="stat-info">
               <div class="stat-value">{{ stats.totalYield }} <span class="unit">kg</span></div>
@@ -126,10 +274,10 @@ onUnmounted(() => {
         </el-card>
       </el-col>
       <el-col :xs="24" :sm="12" :lg="6">
-        <el-card shadow="hover" class="stat-card">
+        <el-card shadow="never" class="m3-card stat-card">
           <div class="stat-item">
-            <div class="stat-icon" style="background: #f56c6c">
-              <el-icon size="28"><OfficeBuilding /></el-icon>
+            <div class="stat-icon" style="background: linear-gradient(135deg, #006A6A, #4DB6B6)">
+              <el-icon size="28" color="#fff"><OfficeBuilding /></el-icon>
             </div>
             <div class="stat-info">
               <div class="stat-value">{{ stats.activeFields }} / {{ stats.totalFields }}</div>
@@ -140,14 +288,14 @@ onUnmounted(() => {
       </el-col>
     </el-row>
 
-    <el-row :gutter="16" class="chart-row">
+    <el-row :gutter="24" class="chart-row">
       <el-col :xs="24" :lg="12">
-        <el-card class="chart-card">
+        <el-card shadow="never" class="m3-card chart-card">
           <div ref="barChartRef" class="chart-container"></div>
         </el-card>
       </el-col>
       <el-col :xs="24" :lg="12">
-        <el-card class="chart-card">
+        <el-card shadow="never" class="m3-card chart-card">
           <div ref="lineChartRef" class="chart-container"></div>
         </el-card>
       </el-col>
@@ -155,17 +303,19 @@ onUnmounted(() => {
   </div>
 </template>
 
-<style scoped lang="css">
-.dashboard {
-  padding: 20px;
+<style scoped>
+.m3-dashboard {
+  padding: 24px;
+  background-color: var(--m3-surface);
+  min-height: calc(100vh - 64px);
 }
 
-.stat-cards {
-  margin-bottom: 16px;
+.stat-row {
+  margin-bottom: 24px;
 }
 
 .stat-card {
-  margin-bottom: 16px;
+  margin-bottom: 24px;
 }
 
 .stat-item {
@@ -177,11 +327,10 @@ onUnmounted(() => {
 .stat-icon {
   width: 56px;
   height: 56px;
-  border-radius: 12px;
+  border-radius: 16px;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: white;
   flex-shrink: 0;
 }
 
@@ -193,28 +342,28 @@ onUnmounted(() => {
 .stat-value {
   font-size: 28px;
   font-weight: 700;
-  color: #303133;
+  color: var(--m3-on-surface);
   line-height: 1.2;
 }
 
 .stat-value .unit {
   font-size: 14px;
   font-weight: 400;
-  color: #909399;
+  color: var(--m3-on-surface-variant);
 }
 
 .stat-label {
   font-size: 14px;
-  color: #909399;
+  color: var(--m3-on-surface-variant);
   margin-top: 4px;
 }
 
 .chart-row {
-  margin-bottom: 16px;
+  margin-bottom: 24px;
 }
 
 .chart-card {
-  margin-bottom: 16px;
+  margin-bottom: 24px;
 }
 
 .chart-container {
@@ -223,6 +372,10 @@ onUnmounted(() => {
 }
 
 @media (max-width: 768px) {
+  .m3-dashboard {
+    padding: 16px;
+  }
+
   .stat-value {
     font-size: 22px;
   }

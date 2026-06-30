@@ -79,6 +79,7 @@ const handleCommand = (command: string) => {
     <div class="header-left">
       <span class="system-badge">AMS</span>
       <h2 class="system-title">农业数据分析和管理系统</h2>
+      <span class="student-info">246230114 卢楚涵 24级软件一班</span>
     </div>
 
     <div class="header-right">
@@ -154,6 +155,15 @@ const handleCommand = (command: string) => {
   font-size: 18px;
   font-weight: 600;
   color: var(--m3-on-surface);
+}
+
+.student-info {
+  font-size: 12px;
+  color: var(--m3-on-surface-variant);
+  background-color: var(--m3-surface-container);
+  padding: 4px 12px;
+  border-radius: 8px;
+  white-space: nowrap;
 }
 
 .header-right {

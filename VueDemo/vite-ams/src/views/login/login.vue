@@ -123,6 +123,7 @@ const loginFn = () => {
         </div>
         <h1 class="title">登录系统</h1>
         <p class="subtitle">农业数据分析和管理系统</p>
+        <div class="student-info">246230114 卢楚涵 24级软件一班</div>
       </div>
 
       <el-form ref="ruleFormRef" :model="ruleForm" :rules="rules" class="m3-form">
@@ -228,6 +229,16 @@ const loginFn = () => {
   font-size: 14px;
   color: var(--m3-on-surface-variant);
   margin: 0;
+}
+
+.student-info {
+  font-size: 12px;
+  color: var(--m3-on-surface-variant);
+  margin-top: 12px;
+  padding: 6px 16px;
+  background-color: var(--m3-surface-container);
+  border-radius: 8px;
+  display: inline-block;
 }
 
 .m3-form :deep(.el-input__wrapper) {

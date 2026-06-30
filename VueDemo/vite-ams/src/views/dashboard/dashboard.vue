@@ -222,6 +222,15 @@ onUnmounted(() => {
 
 <template>
   <div class="m3-dashboard">
+    <el-card shadow="never" class="welcome-card">
+      <div class="welcome-content">
+        <div class="welcome-text">
+          <h2 class="welcome-title">欢迎使用农业数据分析和管理系统</h2>
+          <p class="welcome-subtitle">246230114 卢楚涵 24级软件一班</p>
+        </div>
+      </div>
+    </el-card>
+
     <el-row :gutter="24" class="stat-row">
       <el-col :xs="24" :sm="12" :lg="6">
         <el-card shadow="never" class="stat-card">
@@ -293,6 +302,28 @@ onUnmounted(() => {
   padding: 24px;
   background-color: var(--m3-bg-color);
   min-height: calc(100vh - 64px);
+}
+
+.welcome-card {
+  margin-bottom: 24px;
+  background: linear-gradient(135deg, var(--el-color-primary), var(--el-color-primary-light-3)) !important;
+}
+
+.welcome-content {
+  padding: 8px 0;
+}
+
+.welcome-title {
+  font-size: 22px;
+  font-weight: 600;
+  color: #fff;
+  margin: 0 0 8px;
+}
+
+.welcome-subtitle {
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.85);
+  margin: 0;
 }
 
 .stat-row {

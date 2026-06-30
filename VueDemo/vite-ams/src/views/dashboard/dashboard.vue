@@ -85,9 +85,9 @@ onUnmounted(() => {
 
 <template>
   <div class="dashboard">
-    <el-row :gutter="20" class="stat-cards">
-      <el-col :span="6">
-        <el-card shadow="hover">
+    <el-row :gutter="16" class="stat-cards">
+      <el-col :xs="24" :sm="12" :lg="6">
+        <el-card shadow="hover" class="stat-card">
           <div class="stat-item">
             <div class="stat-icon" style="background: #409eff">
               <el-icon size="28"><TrendCharts /></el-icon>
@@ -99,8 +99,8 @@ onUnmounted(() => {
           </div>
         </el-card>
       </el-col>
-      <el-col :span="6">
-        <el-card shadow="hover">
+      <el-col :xs="24" :sm="12" :lg="6">
+        <el-card shadow="hover" class="stat-card">
           <div class="stat-item">
             <div class="stat-icon" style="background: #67c23a">
               <el-icon size="28"><Grid /></el-icon>
@@ -112,8 +112,8 @@ onUnmounted(() => {
           </div>
         </el-card>
       </el-col>
-      <el-col :span="6">
-        <el-card shadow="hover">
+      <el-col :xs="24" :sm="12" :lg="6">
+        <el-card shadow="hover" class="stat-card">
           <div class="stat-item">
             <div class="stat-icon" style="background: #e6a23c">
               <el-icon size="28"><Box /></el-icon>
@@ -125,8 +125,8 @@ onUnmounted(() => {
           </div>
         </el-card>
       </el-col>
-      <el-col :span="6">
-        <el-card shadow="hover">
+      <el-col :xs="24" :sm="12" :lg="6">
+        <el-card shadow="hover" class="stat-card">
           <div class="stat-item">
             <div class="stat-icon" style="background: #f56c6c">
               <el-icon size="28"><OfficeBuilding /></el-icon>
@@ -140,14 +140,14 @@ onUnmounted(() => {
       </el-col>
     </el-row>
 
-    <el-row :gutter="20" class="chart-row">
-      <el-col :span="12">
-        <el-card>
+    <el-row :gutter="16" class="chart-row">
+      <el-col :xs="24" :lg="12">
+        <el-card class="chart-card">
           <div ref="barChartRef" class="chart-container"></div>
         </el-card>
       </el-col>
-      <el-col :span="12">
-        <el-card>
+      <el-col :xs="24" :lg="12">
+        <el-card class="chart-card">
           <div ref="lineChartRef" class="chart-container"></div>
         </el-card>
       </el-col>
@@ -161,7 +161,11 @@ onUnmounted(() => {
 }
 
 .stat-cards {
-  margin-bottom: 20px;
+  margin-bottom: 16px;
+}
+
+.stat-card {
+  margin-bottom: 16px;
 }
 
 .stat-item {
@@ -178,16 +182,19 @@ onUnmounted(() => {
   align-items: center;
   justify-content: center;
   color: white;
+  flex-shrink: 0;
 }
 
 .stat-info {
   flex: 1;
+  min-width: 0;
 }
 
 .stat-value {
   font-size: 28px;
   font-weight: 700;
   color: #303133;
+  line-height: 1.2;
 }
 
 .stat-value .unit {
@@ -203,10 +210,30 @@ onUnmounted(() => {
 }
 
 .chart-row {
-  margin-bottom: 20px;
+  margin-bottom: 16px;
+}
+
+.chart-card {
+  margin-bottom: 16px;
 }
 
 .chart-container {
   height: 360px;
+  min-height: 280px;
+}
+
+@media (max-width: 768px) {
+  .stat-value {
+    font-size: 22px;
+  }
+
+  .stat-icon {
+    width: 48px;
+    height: 48px;
+  }
+
+  .chart-container {
+    height: 280px;
+  }
 }
 </style>

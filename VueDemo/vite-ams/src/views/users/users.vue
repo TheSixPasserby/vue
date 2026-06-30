@@ -5,6 +5,7 @@ import { getUsersApi, addUserApi, updateUserApi, deleteUserApi, type UserItem } 
 
 const tableData = ref<UserItem[]>([]);
 const loading = ref(false);
+const submitLoading = ref(false);
 const dialogVisible = ref(false);
 const isEdit = ref(false);
 const searchKeyword = ref("");
@@ -23,11 +24,18 @@ const userStatuses = ["启用", "禁用"];
 
 const loadData = async () => {
   loading.value = true;
-  const res = await getUsersApi({ keyword: searchKeyword.value, role: searchRole.value, status: searchStatus.value });
-  if (res.code === 200) {
-    tableData.value = res.data;
+  try {
+    const res = await getUsersApi({
+      keyword: searchKeyword.value,
+      role: searchRole.value,
+      status: searchStatus.value,
+    });
+    if (res.code === 200) {
+      tableData.value = res.data;
+    }
+  } finally {
+    loading.value = false;
   }
-  loading.value = false;
 };
 
 const handleAdd = () => {
@@ -48,29 +56,30 @@ const handleDelete = async (row: UserItem) => {
   if (res.code === 200) {
     ElMessage.success("删除成功");
     loadData();
-  } else {
-    ElMessage.error(res.message || "删除失败");
   }
 };
 
 const handleSubmit = async () => {
-  if (isEdit.value && formData.value.id) {
-    const { psw, ...rest } = formData.value;
-    const res = await updateUserApi(formData.value.id, rest);
-    if (res.code === 200) {
-      ElMessage.success("更新成功");
-      dialogVisible.value = false;
-      loadData();
-    }
-  } else {
-    const res = await addUserApi(formData.value as any);
-    if (res.code === 200) {
-      ElMessage.success("添加成功");
-      dialogVisible.value = false;
-      loadData();
+  submitLoading.value = true;
+  try {
+    if (isEdit.value && formData.value.id) {
+      const { psw, ...rest } = formData.value;
+      const res = await updateUserApi(formData.value.id, rest);
+      if (res.code === 200) {
+        ElMessage.success("更新成功");
+        dialogVisible.value = false;
+        loadData();
+      }
     } else {
-      ElMessage.error(res.message || "添加失败");
+      const res = await addUserApi(formData.value as any);
+      if (res.code === 200) {
+        ElMessage.success("添加成功");
+        dialogVisible.value = false;
+        loadData();
+      }
     }
+  } finally {
+    submitLoading.value = false;
   }
 };
 
@@ -99,7 +108,7 @@ onMounted(loadData);
 
       <el-table :data="tableData" v-loading="loading" stripe border style="width: 100%">
         <el-table-column prop="id" label="ID" width="70" />
-        <el-table-column prop="username" label="用户名" width="120" />
+        <el-table-column prop="username" label="用户名" width="120" show-overflow-tooltip />
         <el-table-column prop="role" label="角色" width="100">
           <template #default="{ row }">
             <el-tag :type="row.role === '管理员' ? 'danger' : 'primary'">
@@ -107,7 +116,9 @@ onMounted(loadData);
             </el-tag>
           </template>
         </el-table-column>
-        <el-table-column prop="phone" label="手机号" width="140" />
+        <el-table-column prop="phone" label="手机号" width="140">
+          <template #default="{ row }">{{ row.phone || "-" }}</template>
+        </el-table-column>
         <el-table-column prop="status" label="状态" width="100">
           <template #default="{ row }">
             <el-tag :type="row.status === '启用' ? 'success' : 'danger'">
@@ -124,7 +135,7 @@ onMounted(loadData);
       </el-table>
     </el-card>
 
-    <el-dialog :title="isEdit ? '编辑用户' : '新增用户'" v-model="dialogVisible" width="500px">
+    <el-dialog :title="isEdit ? '编辑用户' : '新增用户'" v-model="dialogVisible" width="500px" destroy-on-close>
       <el-form :model="formData" :rules="formRules" label-width="100px">
         <el-form-item label="用户名" prop="username">
           <el-input v-model="formData.username" :disabled="isEdit" />
@@ -148,7 +159,7 @@ onMounted(loadData);
       </el-form>
       <template #footer>
         <el-button @click="dialogVisible = false">取消</el-button>
-        <el-button type="primary" @click="handleSubmit">确定</el-button>
+        <el-button type="primary" :loading="submitLoading" @click="handleSubmit">确定</el-button>
       </template>
     </el-dialog>
   </div>
@@ -163,10 +174,13 @@ onMounted(loadData);
   display: flex;
   justify-content: space-between;
   align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
 }
 
 .search-bar {
   display: flex;
   gap: 10px;
+  flex-wrap: wrap;
 }
 </style>

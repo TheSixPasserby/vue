@@ -5,6 +5,7 @@ import { getSuppliesApi, addSupplyApi, updateSupplyApi, deleteSupplyApi, type Su
 
 const tableData = ref<SupplyItem[]>([]);
 const loading = ref(false);
+const submitLoading = ref(false);
 const dialogVisible = ref(false);
 const isEdit = ref(false);
 const searchKeyword = ref("");
@@ -22,11 +23,14 @@ const supplyTypes = ["化肥", "农药", "种子", "农资"];
 
 const loadData = async () => {
   loading.value = true;
-  const res = await getSuppliesApi({ keyword: searchKeyword.value, type: searchType.value });
-  if (res.code === 200) {
-    tableData.value = res.data;
+  try {
+    const res = await getSuppliesApi({ keyword: searchKeyword.value, type: searchType.value });
+    if (res.code === 200) {
+      tableData.value = res.data;
+    }
+  } finally {
+    loading.value = false;
   }
-  loading.value = false;
 };
 
 const handleAdd = () => {
@@ -51,20 +55,25 @@ const handleDelete = async (row: SupplyItem) => {
 };
 
 const handleSubmit = async () => {
-  if (isEdit.value && formData.value.id) {
-    const res = await updateSupplyApi(formData.value.id, formData.value);
-    if (res.code === 200) {
-      ElMessage.success("更新成功");
-      dialogVisible.value = false;
-      loadData();
+  submitLoading.value = true;
+  try {
+    if (isEdit.value && formData.value.id) {
+      const res = await updateSupplyApi(formData.value.id, formData.value);
+      if (res.code === 200) {
+        ElMessage.success("更新成功");
+        dialogVisible.value = false;
+        loadData();
+      }
+    } else {
+      const res = await addSupplyApi(formData.value);
+      if (res.code === 200) {
+        ElMessage.success("添加成功");
+        dialogVisible.value = false;
+        loadData();
+      }
     }
-  } else {
-    const res = await addSupplyApi(formData.value);
-    if (res.code === 200) {
-      ElMessage.success("添加成功");
-      dialogVisible.value = false;
-      loadData();
-    }
+  } finally {
+    submitLoading.value = false;
   }
 };
 
@@ -96,7 +105,7 @@ onMounted(loadData);
 
       <el-table :data="tableData" v-loading="loading" stripe border style="width: 100%">
         <el-table-column prop="id" label="ID" width="70" />
-        <el-table-column prop="name" label="农资名称" width="120" />
+        <el-table-column prop="name" label="农资名称" width="120" show-overflow-tooltip />
         <el-table-column prop="type" label="类型" width="80" />
         <el-table-column prop="stock" label="库存量" width="120">
           <template #default="{ row }">
@@ -106,8 +115,12 @@ onMounted(loadData);
           </template>
         </el-table-column>
         <el-table-column prop="unit" label="单位" width="70" />
-        <el-table-column prop="supplier" label="供应商" min-width="140" />
-        <el-table-column prop="price" label="单价(元)" width="100" />
+        <el-table-column prop="supplier" label="供应商" min-width="140" show-overflow-tooltip>
+          <template #default="{ row }">{{ row.supplier || "-" }}</template>
+        </el-table-column>
+        <el-table-column prop="price" label="单价(元)" width="100">
+          <template #default="{ row }">{{ row.price ? `¥${row.price}` : "-" }}</template>
+        </el-table-column>
         <el-table-column label="操作" width="160" fixed="right">
           <template #default="{ row }">
             <el-button type="primary" link @click="handleEdit(row)">编辑</el-button>
@@ -117,7 +130,7 @@ onMounted(loadData);
       </el-table>
     </el-card>
 
-    <el-dialog :title="isEdit ? '编辑农资' : '新增农资'" v-model="dialogVisible" width="500px">
+    <el-dialog :title="isEdit ? '编辑农资' : '新增农资'" v-model="dialogVisible" width="500px" destroy-on-close>
       <el-form :model="formData" :rules="formRules" label-width="100px">
         <el-form-item label="农资名称" prop="name">
           <el-input v-model="formData.name" />
@@ -142,7 +155,7 @@ onMounted(loadData);
       </el-form>
       <template #footer>
         <el-button @click="dialogVisible = false">取消</el-button>
-        <el-button type="primary" @click="handleSubmit">确定</el-button>
+        <el-button type="primary" :loading="submitLoading" @click="handleSubmit">确定</el-button>
       </template>
     </el-dialog>
   </div>
@@ -157,10 +170,13 @@ onMounted(loadData);
   display: flex;
   justify-content: space-between;
   align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
 }
 
 .search-bar {
   display: flex;
   gap: 10px;
+  flex-wrap: wrap;
 }
 </style>

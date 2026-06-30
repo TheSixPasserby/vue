@@ -5,6 +5,7 @@ import { getCropsApi, addCropApi, updateCropApi, deleteCropApi, type CropItem } 
 
 const tableData = ref<CropItem[]>([]);
 const loading = ref(false);
+const submitLoading = ref(false);
 const dialogVisible = ref(false);
 const isEdit = ref(false);
 const searchKeyword = ref("");
@@ -23,11 +24,18 @@ const cropStatuses = ["生长中", "已收割", "待种植"];
 
 const loadData = async () => {
   loading.value = true;
-  const res = await getCropsApi({ keyword: searchKeyword.value, type: searchType.value, status: searchStatus.value });
-  if (res.code === 200) {
-    tableData.value = res.data;
+  try {
+    const res = await getCropsApi({
+      keyword: searchKeyword.value,
+      type: searchType.value,
+      status: searchStatus.value,
+    });
+    if (res.code === 200) {
+      tableData.value = res.data;
+    }
+  } finally {
+    loading.value = false;
   }
-  loading.value = false;
 };
 
 const handleAdd = () => {
@@ -52,20 +60,25 @@ const handleDelete = async (row: CropItem) => {
 };
 
 const handleSubmit = async () => {
-  if (isEdit.value && formData.value.id) {
-    const res = await updateCropApi(formData.value.id, formData.value);
-    if (res.code === 200) {
-      ElMessage.success("更新成功");
-      dialogVisible.value = false;
-      loadData();
+  submitLoading.value = true;
+  try {
+    if (isEdit.value && formData.value.id) {
+      const res = await updateCropApi(formData.value.id, formData.value);
+      if (res.code === 200) {
+        ElMessage.success("更新成功");
+        dialogVisible.value = false;
+        loadData();
+      }
+    } else {
+      const res = await addCropApi(formData.value);
+      if (res.code === 200) {
+        ElMessage.success("添加成功");
+        dialogVisible.value = false;
+        loadData();
+      }
     }
-  } else {
-    const res = await addCropApi(formData.value);
-    if (res.code === 200) {
-      ElMessage.success("添加成功");
-      dialogVisible.value = false;
-      loadData();
-    }
+  } finally {
+    submitLoading.value = false;
   }
 };
 
@@ -94,11 +107,13 @@ onMounted(loadData);
 
       <el-table :data="tableData" v-loading="loading" stripe border style="width: 100%">
         <el-table-column prop="id" label="ID" width="70" />
-        <el-table-column prop="name" label="作物名称" width="120" />
+        <el-table-column prop="name" label="作物名称" width="120" show-overflow-tooltip />
         <el-table-column prop="type" label="类型" width="100" />
         <el-table-column prop="area" label="种植面积(亩)" width="120" />
         <el-table-column prop="yield" label="预计产量(kg)" width="120" />
-        <el-table-column prop="plantDate" label="种植日期" width="120" />
+        <el-table-column prop="plantDate" label="种植日期" width="120">
+          <template #default="{ row }">{{ row.plantDate || "-" }}</template>
+        </el-table-column>
         <el-table-column prop="status" label="状态" width="100">
           <template #default="{ row }">
             <el-tag :type="row.status === '生长中' ? 'success' : row.status === '已收割' ? 'info' : 'warning'">
@@ -106,7 +121,9 @@ onMounted(loadData);
             </el-tag>
           </template>
         </el-table-column>
-        <el-table-column prop="location" label="所在区域" width="100" />
+        <el-table-column prop="location" label="所在区域" min-width="100" show-overflow-tooltip>
+          <template #default="{ row }">{{ row.location || "-" }}</template>
+        </el-table-column>
         <el-table-column label="操作" width="160" fixed="right">
           <template #default="{ row }">
             <el-button type="primary" link @click="handleEdit(row)">编辑</el-button>
@@ -116,7 +133,7 @@ onMounted(loadData);
       </el-table>
     </el-card>
 
-    <el-dialog :title="isEdit ? '编辑作物' : '新增作物'" v-model="dialogVisible" width="500px">
+    <el-dialog :title="isEdit ? '编辑作物' : '新增作物'" v-model="dialogVisible" width="500px" destroy-on-close>
       <el-form :model="formData" :rules="formRules" label-width="100px">
         <el-form-item label="作物名称" prop="name">
           <el-input v-model="formData.name" />
@@ -146,7 +163,7 @@ onMounted(loadData);
       </el-form>
       <template #footer>
         <el-button @click="dialogVisible = false">取消</el-button>
-        <el-button type="primary" @click="handleSubmit">确定</el-button>
+        <el-button type="primary" :loading="submitLoading" @click="handleSubmit">确定</el-button>
       </template>
     </el-dialog>
   </div>
@@ -161,10 +178,13 @@ onMounted(loadData);
   display: flex;
   justify-content: space-between;
   align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
 }
 
 .search-bar {
   display: flex;
   gap: 10px;
+  flex-wrap: wrap;
 }
 </style>

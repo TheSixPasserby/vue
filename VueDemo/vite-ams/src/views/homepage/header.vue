@@ -1,14 +1,20 @@
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted } from 'vue';
-import { useRouter } from 'vue-router';
-import { useUserStore } from '../../store/user';
-import { ElMessageBox } from 'element-plus';
-import { Promotion, SwitchButton } from '@element-plus/icons-vue';
+import { ref, onMounted, onUnmounted } from "vue";
+import { useRouter } from "vue-router";
+import { useUserStore } from "../../store/user";
+import { Promotion, SwitchButton, User } from "@element-plus/icons-vue";
 
 const router = useRouter();
 const userStore = useUserStore();
 const currentTime = ref(new Date().toLocaleTimeString("zh-CN"));
-const currentDate = ref(new Date().toLocaleDateString("zh-CN", { year: 'numeric', month: '2-digit', day: '2-digit', weekday: 'long' }));
+const currentDate = ref(
+  new Date().toLocaleDateString("zh-CN", {
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    weekday: "long",
+  })
+);
 let timer: ReturnType<typeof setInterval>;
 
 onMounted(() => {
@@ -21,15 +27,11 @@ onUnmounted(() => {
   clearInterval(timer);
 });
 
-const handleLoginOut = () => {
-  ElMessageBox.confirm('确定退出登录吗？', '提示', {
-    confirmButtonText: '确定',
-    cancelButtonText: '取消',
-    type: 'warning',
-  }).then(() => {
+const handleCommand = (command: string) => {
+  if (command === "logout") {
     userStore.logout();
     router.push("/login");
-  }).catch(() => {});
+  }
 };
 </script>
 
@@ -46,19 +48,28 @@ const handleLoginOut = () => {
         <div class="date">{{ currentDate }}</div>
       </div>
       <el-divider direction="vertical" />
-      <div class="user_info">
-        <el-avatar :size="32" style="background-color: #409eff">
-          {{ userStore.user?.username?.charAt(0) }}
-        </el-avatar>
-        <div class="user_detail">
-          <span class="user_name">{{ userStore.user?.username }}</span>
-          <span class="user_role">{{ userStore.user?.role }}</span>
+      <el-dropdown @command="handleCommand" trigger="click">
+        <div class="user_dropdown">
+          <el-avatar :size="32" style="background-color: #409eff">
+            {{ userStore.user?.username?.charAt(0) }}
+          </el-avatar>
+          <div class="user_detail">
+            <span class="user_name">{{ userStore.user?.username }}</span>
+            <span class="user_role">{{ userStore.user?.role }}</span>
+          </div>
+          <el-icon class="dropdown_arrow"><ArrowDown /></el-icon>
         </div>
-      </div>
-      <el-button type="danger" text @click="handleLoginOut">
-        <el-icon size="16"><SwitchButton /></el-icon>
-        <span style="margin-left: 4px">退出</span>
-      </el-button>
+        <template #dropdown>
+          <el-dropdown-menu>
+            <el-dropdown-item :icon="User" disabled>
+              {{ userStore.user?.role }}
+            </el-dropdown-item>
+            <el-dropdown-item :icon="SwitchButton" command="logout" divided>
+              退出登录
+            </el-dropdown-item>
+          </el-dropdown-menu>
+        </template>
+      </el-dropdown>
     </div>
   </div>
 </template>
@@ -116,10 +127,18 @@ const handleLoginOut = () => {
   height: 30px;
 }
 
-.user_info {
+.user_dropdown {
   display: flex;
   align-items: center;
   gap: 10px;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 6px;
+  transition: background-color 0.2s;
+}
+
+.user_dropdown:hover {
+  background-color: rgba(255, 255, 255, 0.1);
 }
 
 .user_detail {
@@ -137,5 +156,18 @@ const handleLoginOut = () => {
 .user_role {
   font-size: 12px;
   color: #bfcbd9;
+}
+
+.dropdown_arrow {
+  color: #bfcbd9;
+  font-size: 12px;
+  transition: transform 0.2s;
+}
+
+:deep(.el-dropdown-menu__item) {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
 }
 </style>

@@ -5,6 +5,7 @@ import { getFieldsApi, addFieldApi, updateFieldApi, deleteFieldApi, type FieldIt
 
 const tableData = ref<FieldItem[]>([]);
 const loading = ref(false);
+const submitLoading = ref(false);
 const dialogVisible = ref(false);
 const isEdit = ref(false);
 const searchKeyword = ref("");
@@ -23,11 +24,18 @@ const fieldStatuses = ["使用中", "闲置", "维护中"];
 
 const loadData = async () => {
   loading.value = true;
-  const res = await getFieldsApi({ keyword: searchKeyword.value, soilType: searchSoilType.value, status: searchStatus.value });
-  if (res.code === 200) {
-    tableData.value = res.data;
+  try {
+    const res = await getFieldsApi({
+      keyword: searchKeyword.value,
+      soilType: searchSoilType.value,
+      status: searchStatus.value,
+    });
+    if (res.code === 200) {
+      tableData.value = res.data;
+    }
+  } finally {
+    loading.value = false;
   }
-  loading.value = false;
 };
 
 const handleAdd = () => {
@@ -52,20 +60,25 @@ const handleDelete = async (row: FieldItem) => {
 };
 
 const handleSubmit = async () => {
-  if (isEdit.value && formData.value.id) {
-    const res = await updateFieldApi(formData.value.id, formData.value);
-    if (res.code === 200) {
-      ElMessage.success("更新成功");
-      dialogVisible.value = false;
-      loadData();
+  submitLoading.value = true;
+  try {
+    if (isEdit.value && formData.value.id) {
+      const res = await updateFieldApi(formData.value.id, formData.value);
+      if (res.code === 200) {
+        ElMessage.success("更新成功");
+        dialogVisible.value = false;
+        loadData();
+      }
+    } else {
+      const res = await addFieldApi(formData.value);
+      if (res.code === 200) {
+        ElMessage.success("添加成功");
+        dialogVisible.value = false;
+        loadData();
+      }
     }
-  } else {
-    const res = await addFieldApi(formData.value);
-    if (res.code === 200) {
-      ElMessage.success("添加成功");
-      dialogVisible.value = false;
-      loadData();
-    }
+  } finally {
+    submitLoading.value = false;
   }
 };
 
@@ -94,11 +107,15 @@ onMounted(loadData);
 
       <el-table :data="tableData" v-loading="loading" stripe border style="width: 100%">
         <el-table-column prop="id" label="ID" width="70" />
-        <el-table-column prop="name" label="地块名称" width="140" />
+        <el-table-column prop="name" label="地块名称" width="140" show-overflow-tooltip />
         <el-table-column prop="area" label="面积(亩)" width="100" />
         <el-table-column prop="soilType" label="土壤类型" width="100" />
-        <el-table-column prop="location" label="位置坐标" min-width="160" />
-        <el-table-column prop="irrigation" label="灌溉方式" width="100" />
+        <el-table-column prop="location" label="位置坐标" min-width="160" show-overflow-tooltip>
+          <template #default="{ row }">{{ row.location || "-" }}</template>
+        </el-table-column>
+        <el-table-column prop="irrigation" label="灌溉方式" width="100">
+          <template #default="{ row }">{{ row.irrigation || "-" }}</template>
+        </el-table-column>
         <el-table-column prop="status" label="状态" width="100">
           <template #default="{ row }">
             <el-tag :type="row.status === '使用中' ? 'success' : row.status === '闲置' ? 'info' : 'warning'">
@@ -115,7 +132,7 @@ onMounted(loadData);
       </el-table>
     </el-card>
 
-    <el-dialog :title="isEdit ? '编辑农田' : '新增农田'" v-model="dialogVisible" width="500px">
+    <el-dialog :title="isEdit ? '编辑农田' : '新增农田'" v-model="dialogVisible" width="500px" destroy-on-close>
       <el-form :model="formData" :rules="formRules" label-width="100px">
         <el-form-item label="地块名称" prop="name">
           <el-input v-model="formData.name" />
@@ -146,7 +163,7 @@ onMounted(loadData);
       </el-form>
       <template #footer>
         <el-button @click="dialogVisible = false">取消</el-button>
-        <el-button type="primary" @click="handleSubmit">确定</el-button>
+        <el-button type="primary" :loading="submitLoading" @click="handleSubmit">确定</el-button>
       </template>
     </el-dialog>
   </div>
@@ -161,10 +178,13 @@ onMounted(loadData);
   display: flex;
   justify-content: space-between;
   align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
 }
 
 .search-bar {
   display: flex;
   gap: 10px;
+  flex-wrap: wrap;
 }
 </style>

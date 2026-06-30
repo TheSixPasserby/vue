@@ -5,6 +5,10 @@ import {
   type RouteRecordRaw,
 } from "vue-router";
 import Cookies from "js-cookie";
+import NProgress from "nprogress";
+import "nprogress/nprogress.css";
+
+NProgress.configure({ showSpinner: false });
 
 const baseRoutes: RouteRecordRaw[] = [
   {
@@ -43,9 +47,6 @@ let dynamicRoutesAdded = false;
 export const addDynamicRoutes = (menuPaths: string[]) => {
   if (dynamicRoutesAdded) return;
 
-  const homepageRoute = router.getRoutes().find((r) => r.name === "homepage");
-  if (!homepageRoute) return;
-
   menuPaths.forEach((path) => {
     const component = dynamicRouteMap[path];
     if (component) {
@@ -61,9 +62,11 @@ export const addDynamicRoutes = (menuPaths: string[]) => {
 };
 
 export const resetDynamicRoutes = () => {
-  const dynamicRoutes = router.getRoutes().filter((r) => r.name !== "homepage" && r.name !== "login" && r.name !== undefined);
+  const dynamicRoutes = router.getRoutes().filter(
+    (r) => r.name && r.name !== "homepage" && r.name !== "login"
+  );
   dynamicRoutes.forEach((route) => {
-    if (route.name && route.name !== "homepage" && route.name !== "login") {
+    if (route.name) {
       router.removeRoute(route.name);
     }
   });
@@ -71,11 +74,12 @@ export const resetDynamicRoutes = () => {
 };
 
 router.beforeEach((to, _from, next) => {
+  NProgress.start();
   const token = Cookies.get("token");
 
   if (to.path === "/login") {
     if (token) {
-      next("/homepage");
+      next("/homepage/dashboard");
     } else {
       next();
     }
@@ -84,6 +88,10 @@ router.beforeEach((to, _from, next) => {
   } else {
     next();
   }
+});
+
+router.afterEach(() => {
+  NProgress.done();
 });
 
 export const initRouter = (app: App<Element>) => {
